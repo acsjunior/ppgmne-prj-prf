@@ -10,10 +10,10 @@ from ppgmne_prj_prf.database.utils import csv_zip_to_df
 
 
 class Accidents:
-    def __init__(self, ufs: list[str] = ["PR"], verbose=True, read_cache=False):
+    def __init__(self, uf: str = "PR", verbose=True, read_cache=False):
         self.name_raw = "accidents_raw"
         self.name = "accidents"
-        self.ufs = ufs
+        self.uf = str.upper(uf)
         self.verbose = verbose
         self.read_cache = read_cache
 
@@ -129,11 +129,11 @@ class Accidents:
             else:
                 df_out = pd.concat([df_out, df], ignore_index=True)
 
-        # Filtra as UFs desejadas:
+        # Filtra a UF desejada:
         logger.info(
-            f"Filtrando somente a(s) UF(s): {self.ufs}."
+            f"Selecionando somente os dados do {self.uf}."
         ) if self.verbose else None
-        df_out = df_out[df_out["uf"].str.upper().isin(self.ufs)].copy()
+        df_out = df_out[df_out["uf"].str.upper() == self.uf].copy()
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
         if not self.read_cache:
