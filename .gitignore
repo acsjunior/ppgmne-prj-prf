@@ -139,3 +139,6 @@ cython_debug/
 
 # OSX
 .DS_Store
+
+# Cache
+data/prf/cache/*
