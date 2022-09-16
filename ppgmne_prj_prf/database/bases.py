@@ -5,15 +5,16 @@ from loguru import logger
 from pandera import Column, DataFrameSchema
 from pandera.errors import SchemaError
 
+from ppgmne_prj_prf.config.params import UF
 from ppgmne_prj_prf.config.paths import PATH_DATA_PRF, PATH_DATA_PRF_CACHE
 from ppgmne_prj_prf.database.utils import csv_zip_to_df
 
 
 class Accidents:
-    def __init__(self, uf: str = "PR", verbose=True, read_cache=False):
+    def __init__(self, verbose=True, read_cache=False):
         self.name_raw = "accidents_raw"
         self.name = "accidents"
-        self.uf = str.upper(uf)
+        self.uf = UF
         self.verbose = verbose
         self.read_cache = read_cache
 
