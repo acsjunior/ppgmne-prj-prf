@@ -7,7 +7,7 @@ from loguru import logger
 from unidecode import unidecode
 
 from ppgmne_prj_prf.config.params import UF
-from ppgmne_prj_prf.config.paths import PATH_DATA_PRF
+from ppgmne_prj_prf.config.paths import PATH_DATA_PRF, PATH_DATA_PRF_CACHE
 from ppgmne_prj_prf.database.utils import concatenate_dict_of_dicts
 
 
@@ -21,6 +21,16 @@ class Stations:
 
     def transform(self):
         """Método para o pré-processamento dos dados das estações policiais"""
+
+        logger.info("Início do pré processamento.") if self.verbose else None
+
+        cache_path = PATH_DATA_PRF_CACHE / f"{self.name}.pkl"
+
+        if self.read_cache:
+            logger.info("Modo de leitura da cache ativo.")
+            self.df_stations = pd.read_pickle(cache_path)
+            logger.info("Fim do pré-processamento.")
+            return
 
         logger.info(
             "Convertendo os dados das estações policiais para GeoJson."
@@ -123,6 +133,11 @@ class Stations:
                 json.load(file)["stations_replace"]
             )
         df_out["uop"] = df_out["name"].map(stations_to_replace)
+
+        # Armazena a cache caso o modo de leitura da cache não esteja ativo:
+        if not self.read_cache:
+            logger.info(f"Armazenado {cache_path}.")
+            df_out.to_pickle(cache_path)
 
         self.df_stations = df_out
         logger.info("Fim do pré-processamento.") if self.verbose else None
