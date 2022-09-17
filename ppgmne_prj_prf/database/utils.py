@@ -90,3 +90,29 @@ def get_decimal_places(col: pd.Series) -> pd.Series:
     """
     out = col.astype(float).astype(str).str.split(".").str[1].str.len().astype(int)
     return out
+
+
+def concatenate_dict_of_dicts(dict_of_dicts: dict) -> dict:
+    """_summary_
+
+    Parameters
+    ----------
+    dict_of_dicts : dict
+        Dicionário de dicionários com a mesma estrutura.
+
+    Returns
+    -------
+    dict
+        Dictionário unificado.
+    """
+    dict_out = None
+
+    for key in dict_of_dicts:
+        dict_i = dict_of_dicts[key]
+
+        if dict_out is None:
+            dict_out = dict_i
+        else:
+            dict_out = dict(dict_out, **dict_i)
+
+    return dict_out
