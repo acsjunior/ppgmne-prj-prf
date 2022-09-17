@@ -30,6 +30,7 @@ class Accidents:
         self.name_raw = "accidents_raw"
         self.name = "accidents"
         self.uf = UF
+        self.df_accidents = pd.DataFrame()
         self.verbose = verbose
         self.read_cache = read_cache
 
@@ -176,7 +177,7 @@ class Accidents:
         df.dropna(inplace=True)
         self.__print_df_shape(df)
 
-        # Mantém na base somente registros nas delegacias das UFs desejadas:
+        # Mantém na base somente registros nas delegacias da UF desejada:
         logger.info(
             f"Mantendo somente os registros do {self.uf}."
         ) if self.verbose else None
@@ -216,14 +217,15 @@ class Accidents:
         df = self.__keep_geo_correct_rows(df)
         self.__print_df_shape(df)
 
+        logger.info(f"Aplicação das correções manuais.") if self.verbose else None
+        df = self.__manual_transformations(df)
+        self.__print_df_shape(df)
+
         logger.info(
             f"Eliminando as coordenadas outliers por delegacia."
         ) if self.verbose else None
         df = self.__remove_outlier_coords(df)
         self.__print_df_shape(df)
-
-        # Corrige o padrão dos nomes das UOPs:
-        # TODO
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
         cache_path = PATH_DATA_PRF_CACHE / f"{self.name}.pkl"
@@ -232,7 +234,7 @@ class Accidents:
             df.to_pickle(cache_path)
 
         self.df_accidents = df.copy()
-        logger.info(f"Fim do pré processamento.") if self.verbose else None
+        logger.info(f"Fim do pré-processamento.") if self.verbose else None
         self.__print_df_shape(df)
 
     #######################################################################
@@ -346,5 +348,37 @@ class Accidents:
 
         mask = (lat_abs_zscore <= 3) & (lon_abs_zscore <= 3)
         df_out = df[mask]
+
+        return df_out
+
+    def __manual_transformations(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para aplicar as correções necessárias identificadas após análise.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Data frame dos acidentes.
+
+        Returns
+        -------
+        pd.DataFrame
+            Data frame com as correções aplicadas.
+        """
+        # Lê o json com as correções manuais:
+        with open(PATH_DATA_PRF / "transformations.json") as file:
+            transformations = json.load(file)
+
+            accidents_to_delete_by_uop = transformations["accidents_deletion"]["uop"]
+            uops_to_replace = transformations["accidents_replace"]["uop"]
+            dels_to_replace = transformations["accidents_replace"]["del"]
+
+        # Deleta os registros a serem desconsiderados:
+        df_out = df[~df["uop"].isin(accidents_to_delete_by_uop)].copy()
+
+        # Corrige os registros:
+        right_dels = df_out["uop"].map(dels_to_replace)
+        right_uops = df_out["uop"].map(uops_to_replace)
+        df_out["delegacia"] = right_dels.combine_first(df_out["delegacia"])
+        df_out["uop"] = right_uops.combine_first(df_out["uop"])
 
         return df_out
