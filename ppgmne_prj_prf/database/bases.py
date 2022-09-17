@@ -157,7 +157,7 @@ class Accidents:
             df_out.to_pickle(cache_path)
 
         self.df_accidents = df_out.copy()
-        logger.info(f"Fim!")
+        logger.info(f"Fim da extração dos dados.")
 
     def transform(self):
         logger.info("Início do pré processamento.") if self.verbose else None
