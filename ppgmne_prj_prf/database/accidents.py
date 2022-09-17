@@ -115,7 +115,7 @@ class Accidents:
         if self.read_cache:
             logger.info("Modo de leitura da cache ativo.")
             self.df_accidents = pd.read_pickle(cache_path)
-            logger.info("Fim!")
+            logger.info("Fim da extração dos dados.")
             return
 
         df_out = pd.DataFrame()
@@ -171,7 +171,7 @@ class Accidents:
         if self.read_cache:
             logger.info("Modo de leitura da cache ativo.")
             self.df_accidents = pd.read_pickle(cache_path)
-            logger.info("Fim do pré processamento.")
+            logger.info("Fim do pré-processamento.")
             return
 
         df = self.df_accidents
