@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>PR</name>
+    <description>Unidades da PRF no Paraná</description>
+    <Style id="icon-1548-9C27B0-normal">
+      <IconStyle>
+        <color>ffb0279c</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+    </Style>
+    <Style id="icon-1548-9C27B0-highlight">
+      <IconStyle>
+        <color>ffb0279c</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+    </Style>
+    <StyleMap id="icon-1548-9C27B0">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1548-9C27B0-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1548-9C27B0-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1657-FBC02D-normal">
+      <IconStyle>
+        <color>ff2dc0fb</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+    </Style>
+    <Style id="icon-1657-FBC02D-highlight">
+      <IconStyle>
+        <color>ff2dc0fb</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+    </Style>
+    <StyleMap id="icon-1657-FBC02D">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1657-FBC02D-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1657-FBC02D-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1899-097138-normal">
+      <IconStyle>
+        <color>ff387109</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+        <hotSpot x="32" xunits="pixels" y="64" yunits="insetPixels"/>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+    </Style>
+    <Style id="icon-1899-097138-highlight">
+      <IconStyle>
+        <color>ff387109</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+        <hotSpot x="32" xunits="pixels" y="64" yunits="insetPixels"/>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+    </Style>
+    <StyleMap id="icon-1899-097138">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1899-097138-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1899-097138-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Folder>
+      <name>Superintendências</name>
+      <Placemark>
+        <name>PR</name>
+        <description><![CDATA[Superintendência da PRF no Paraná<br>BR 476 (Linha Verde), 10.150 (esquina com Avenida das Torres) Prado Velho<br>Curitiba / PR<br>Contato:<br>    Telefone: (41) 3535-1910<br>    Email: atendimento.pr@prf.gov.br<br>Horário funcionamento: 8h às 16h, de segunda à sexta-feira]]></description>
+        <styleUrl>#icon-1899-097138</styleUrl>
+        <Point>
+          <coordinates>
+            -49.24394,-25.452961,0
+          </coordinates>
+        </Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>Delegacias</name>
+      <Placemark>
+        <name>PR-Cascavel</name>
+        <description><![CDATA[Delegacia PRF em Cascavel<br>Rua Everaldo Loures Xavier, 127 Universitário<br>Cascavel / PR<br>Contato:<br> Telefone: (41) 3535-2140<br> Email: del04.pr@prf.gov.br<br>Horário funcionamento: 8h às 17h, de segunda à sexta-feira]]></description>
+        <styleUrl>#icon-1548-9C27B0</styleUrl>
+        <Point>
+          <coordinates>
+            -53.438094,-24.975314,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-Colombo</name>
+        <description><![CDATA[Delegacia PRF em Colombo<br>BR 116, km 12,5 <br>Colombo / PR<br>Contato:<br>    Telefone: (41) 3535-2110<br>    Email: del01.pr@prf.gov.br<br>Horário funcionamento: 8h às 17h, de segunda à sexta-feira]]></description>
+        <styleUrl>#icon-1548-9C27B0</styleUrl>
+        <Point>
+          <coordinates>
+            -49.151234,-25.382066,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-Foz do Iguaçu</name>
+        <description><![CDATA[Delegacia PRF em Foz do Iguaçu<br>Rua da Republica, 98 Parque Presidente I<br>Foz do Iguaçu / PR<br>Contato:<br> Telefone: (41) 3535-2150<br> Email: del05.pr@prf.gov.br<br>Horário funcionamento: 8h às 17h, de segunda à sexta-feira]]></description>
+        <styleUrl>#icon-1548-9C27B0</styleUrl>
+        <Point>
+          <coordinates>
+            -54.572024,-25.513348,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-Guaíra</name>
+        <description><![CDATA[Delegacia PRF em Guaíra<br>BR 272, Km 561,5 <br>Guaíra / PR<br>Contato:<br>    Telefone: (41) 3535-2160<br>    Email: del06.pr@prf.gov.br<br>Horário funcionamento: 8h às 17h, de segunda à sexta-feira]]></description>
+        <styleUrl>#icon-1548-9C27B0</styleUrl>
+        <Point>
+          <coordinates>
+            -54.212443,-24.097899,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-Guarapuava</name>
+        <description><![CDATA[Delegacia PRF em Guarapuava<br>Rua Azevedo Portugal, 244 Centro<br>Guarapuava / PR<br>Contato:<br>    Telefone: (41) 3535-2180<br>    Email: del08.pr@prf.gov.br<br>Horário funcionamento: 8h às 17h, de segunda à sexta-feira]]></description>
+        <styleUrl>#icon-1548-9C27B0</styleUrl>
+        <Point>
+          <coordinates>
+            -51.46037,-25.395554,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-Londrina</name>
+        <description><![CDATA[Delegacia PRF em Londrina<br>Av. Doutor Francisco Xavier Toda, 125 IBC III<br>Londrina / PR<br>Contato:<br>    Telefone: (41) 3535-2170<br>    Email: del07.pr@prf.gov.br<br>Horário funcionamento: 8h às 17h, de segunda à sexta-feira]]></description>
+        <styleUrl>#icon-1548-9C27B0</styleUrl>
+        <Point>
+          <coordinates>
+            -51.210384,-23.285958,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-Maringá</name>
+        <description><![CDATA[Delegacia PRF em Maringá<br>Av. Paranavaí, 2027 Umarizal<br>Maringá / PR<br>Contato:<br>    Telefone: (41) 3535-2190<br>    Email: del09.pr@prf.gov.br<br>Horário funcionamento: 8h às 17h, de segunda à sexta-feira]]></description>
+        <styleUrl>#icon-1548-9C27B0</styleUrl>
+        <Point>
+          <coordinates>
+            -52.031197,-23.483945,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-Pato Branco</name>
+        <description><![CDATA[Delegacia PRF em Pato Branco<br>Rua Governador Jorge Lacerda, 72 Centro<br>Pato Branco / PR<br>Contato:<br>    Telefone: (41) 3535-2120<br>    Email: del02.pr@prf.gov.br<br>Horário funcionamento: 8h às 17h, de segunda à sexta-feira]]></description>
+        <styleUrl>#icon-1548-9C27B0</styleUrl>
+        <Point>
+          <coordinates>
+            -52.701376,-26.223693,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-Ponta Grossa</name>
+        <description><![CDATA[Delegacia PRF em Ponta Grossa<br>Rua Dr. Penteado de Almeida, 780 Centro<br>Ponta Grossa / PR<br>Contato:<br>    Telefone: (41) 3535-2130<br>    Email: del03.pr@prf.gov.br<br>Horário funcionamento: 8h às 17h, de segunda à sexta-feira]]></description>
+        <styleUrl>#icon-1548-9C27B0</styleUrl>
+        <Point>
+          <coordinates>
+            -50.1675,-25.088634,0
+          </coordinates>
+        </Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>Unidades Operacionais</name>
+      <Placemark>
+        <name>PR-ALTO PARAISO</name>
+        <description><![CDATA[Unidade Operacional (UOP) PORTO CAMARGO<br>BR 487, Km 6 <br>ALTO PARAISO / PR<br>Contato:<br>    Telefone: (41) 3535-2163<br>    Email: del06.pr@prf.gov.br<br>del06p03.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -53.754062,-23.37811,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-ALTO PARANÁ</name>
+        <description><![CDATA[Unidade Operacional (UOP) ALTO PARANÁ<br>BR 376, Km 116 <br>ALTO PARANÁ / PR<br>Contato:<br>    Telefone: (44) 99173-5307<br>    Email: del09.pr@prf.gov.br<br>del09p02.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -52.350791,-23.104449,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-APUCARANA</name>
+        <description><![CDATA[Unidade Operacional (UOP) APUCARANA<br>BR-376, km 247<br>APUCARANA / PR<br>Contato:<br>Telefone: (41) 3535-2173<br>Email: del07.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -51.40994,-23.59922,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-ARAUCÁRIA</name>
+        <description><![CDATA[Unidade Operacional (UOP) ARAUCÁRIA<br>BR-476, km 158<br>Araucária/PRUBIRATÃ / PR<br>Contato:<br>Telefone: (41) 3535-2117<br>Email: del01.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -49.4221899,-25.6088548,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-BALSA NOVA</name>
+        <description><![CDATA[Unidade Operacional (UOP) SÃO LUIZ DO PURUNÃ<br>BR 277, Km 139 <br>BALSA NOVA / PR<br>Contato:<br> Telefone: (41) 3535-2116<br> Email: del01.pr@prf.gov.br<br>del01p06.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -49.725013,-25.47031,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-CAMPINA GRANDE DO SUL</name>
+        <description><![CDATA[Unidade Operacional (UOP) TAQUARI<br>BR 116, Km 56 <br>CAMPINA GRANDE DO SUL / PR<br>Contato:<br>    Telefone: (41) 3535-2112<br>    Email: del01.pr@prf.gov.br<br>del01p02.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -48.926503,-25.280187,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-CAMPO MOURÃO</name>
+        <description><![CDATA[Unidade Operacional (UOP) CAMPO MOURÃO<br>BR 369 Km 365 <br>CAMPO MOURÃO / PR<br>Contato:<br>    Telefone: (44) 3523-0819<br>    Email: del09.pr@prf.gov.br<br>del09p03.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -52.434194,-24.118278,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-CASCAVEL</name>
+        <description><![CDATA[Unidade Operacional (UOP) CASCAVEL<br>BR 277, km 580 <br>CASCAVEL / PR<br>Contato:<br> Telefone: (41) 3535-2141<br> Email: del04.pr@prf.gov.br<br>del04p01.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -53.372788,-24.983958,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-CÉU AZUL</name>
+        <description><![CDATA[Unidade Operacional (UOP) CÉU AZUL<br>BR 277 Km 642 <br>CÉU AZUL / PR<br>Contato:<br> Telefone: (41) 3535-2152<br> Email: del05.pr@prf.gov.br<br>del05p02.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -53.876111,-25.179167,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-FOZ DO IGUAÇU (Ponte Amizade)</name>
+        <description><![CDATA[Unidade Operacional (UOP) PONTE DA AMIZADE<br>BR 277 Km 730 <br>FOZ DO IGUAÇU (Ponte Amizade) / PR<br>Contato:<br> Telefone: (41) 3535-2153<br> Email: del05.pr@prf.gov.br<br>del05p03.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -54.595624,-25.5095,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-FOZ DO IGUAÇU (Ponte Tancredo Neves)</name>
+        <description><![CDATA[Unidade Operacional (UOP) PONTE TANCREDO NEVES<br>BR 469 Km 1 <br>FOZ DO IGUAÇU (Ponte Tancredo Neves) / PR<br>Contato:<br> Telefone: (41) 3535-2154<br> Email: del05.pr@prf.gov.br<br>del05p04.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -54.561083,-25.579051,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-GUAÍRA</name>
+        <description><![CDATA[Unidade Operacional (UOP) GUAÍRA<br>BR-272, km 561<br>GUAÍRA / PR<br>Contato:<br>Telefone: (41) 3535-2162<br>Email: del06.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -54.21277,-24.097835,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-GUARAPUAVA</name>
+        <description><![CDATA[Unidade Operacional (UOP) GUARÁ<br>BR 277 Km 319 <br>GUARAPUAVA / PR<br>Contato:<br> Telefone: (41) 3535-2179<br> Email: del08.pr@prf.gov.br<br>del08p01.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -51.261194,-25.371389,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-IBIPORÃ</name>
+        <description><![CDATA[Unidade Operacional (UOP) IBIPORÃ<br>BR 369, Km 131 <br>IBIPORÃ / PR<br>Contato:<br>    Telefone: (41) 3535-2171<br>    Email: del07.pr@prf.gov.br<br>del07p01.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -50.993588,-23.262143,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-IRATI</name>
+        <description><![CDATA[Unidade Operacional (UOP) IRATI<br>BR 277 Km 245 <br>IRATI / PR<br>Contato:<br>    Telefone: (41) 3535-2134<br>    Email: del03.pr@prf.gov.br<br>del03p03.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -50.682028,-25.443944,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-LARANJEIRAS DO SUL</name>
+        <description><![CDATA[Unidade Operacional (UOP) LARANJEIRAS DO SUL<br>BR 277 Km 452 <br>LARANJEIRAS DO SUL / PR<br>Contato:<br>    Telefone: (41) 3535-2143<br>    Email: del04.pr@prf.gov.br<br>del04p02.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -52.393778,-25.376944,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-LINDOESTE</name>
+        <description><![CDATA[Unidade Operacional (UOP) LINDOESTE<br>BR 163 Km 176 <br>LINDOESTE / PR<br>Contato:<br> Telefone: (41) 3535-2146<br> Email: del04.pr@prf.gov.br<br>del04p04.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -53.602,-25.183222,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-MANDIRITUBA</name>
+        <description><![CDATA[Unidade Operacional (UOP) MANDIRITUBA<br>BR 116 Km 137 <br>MANDIRITUBA / PR<br>Contato:<br>    Telefone: (41) 3535-2113<br>    Email: del01.pr@prf.gov.br<br>del01p03.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -49.317639,-25.741278,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-MANDAGUARI</name>
+        <description><![CDATA[Unidade Operacional (UOP) MANDAGUARI<br>BR-376, km 201 <br>MANDAGUARI / PR<br>Contato:<br> Telefone: (41) 3535-2174<br> Email: del09.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -51.73348,-23.507009,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-MAUA DA SERRA</name>
+        <description><![CDATA[Unidade Operacional (UOP) MAUA DA SERRA<br>BR 376, Km 297 <br>MAUA DA SERRA / PR<br>Contato:<br>    Telefone: (41) 3535-2172<br>    Email: del07.pr@prf.gov.br<br>del07p02.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -51.177199,-23.92002,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-PARANAGUÁ</name>
+        <description><![CDATA[Unidade Operacional (UOP) ALEXANDRA<br>BR 277, Km 12 <br>PARANAGUÁ / PR<br>Contato:<br> Telefone: (41) 3535-2115<br> Email: del01.pr@prf.gov.br<br>del01p05.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -48.632531,-25.564132,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-PATO BRANCO</name>
+        <description><![CDATA[Unidade Operacional (UOP) PATO BRANCO<br>BR 158 Km 531 <br>PATO BRANCO / PR<br>Contato:<br>    Telefone: (41) 3535-2121<br>    Email: del02.pr@prf.gov.br<br>del02p01.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -52.680528,-26.206917,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-PLANALTO</name>
+        <description><![CDATA[Unidade Operacional (UOP) PLANALTO<br>BR 163, Km 83 <br>PLANALTO / PR<br>Contato:<br> Telefone: (41) 3535-2124<br> Email: del02.pr@prf.gov.br<br>del02p02.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -53.770788,-25.706964,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-PONTA GROSSA</name>
+        <description><![CDATA[Unidade Operacional (UOP) PONTA GROSSA<br>BR 373, Km 184 <br>PONTA GROSSA / PR<br>Contato:<br>    Telefone: (41) 3535-2131<br>    Email: del03.pr@prf.gov.br<br>del03p01.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -50.283603,-25.043529,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-PORTO VITÓRIA</name>
+        <description><![CDATA[Unidade Operacional (UOP) PORTO VITÓRIA<br>BR 153, Km 472 TARUMÃ<br>PORTO VITÓRIA / PR<br>Contato:<br> Telefone: (41) 3535-2122<br> Email: del02.pr@prf.gov.br<br>del02p03.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -51.218683,-26.313322,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-QUATRO PONTES</name>
+        <description><![CDATA[Unidade Operacional (UOP) QUATRO PONTES<br>BR163, Km 280 <br>QUATRO PONTES / PR<br>Contato:<br>    Telefone: (41) 3535-2164<br>    Email: del06.pr@prf.gov.br<br>del06p02.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -53.998152,-24.570809,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-SANTA TEREZINHA DE ITAIPU</name>
+        <description><![CDATA[Unidade Operacional (UOP) SANTA TEREZINHA DE ITAIPU<br>BR 277 Km 714 <br>SANTA TEREZINHA DE ITAIPU / PR<br>Contato:<br> Telefone: (41) 3535-2151<br> Email: del05.pr@prf.gov.br<br>del05p01.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -54.448611,-25.465,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-SANTO ANTONIO DA PLATINA</name>
+        <description><![CDATA[Unidade Operacional (UOP) SANTO ANTONIO DA PLATINA<br>BR 153 Km 40 <br>SANTO ANTONIO DA PLATINA / PR<br>Contato:<br> Telefone: (41) 3535-2178<br> Email: del07.pr@prf.gov.br<br>del07p03.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -50.056861,-23.284444,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-SÃO JOSÉ DOS PINHAIS</name>
+        <description><![CDATA[Unidade Operacional (UOP) SÃO JOSÉ DOS PINHAIS/WANSER<br>BR-277, km 59<br>SÃO JOSÉ DOS PINHAIS / PR<br>Contato:<br>Telefone: (41) 3535-2118<br>Email: del01.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -49.02945,-25.55572,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-SÃO MATEUS DO SUL</name>
+        <description><![CDATA[Unidade Operacional (UOP) SÃO MATEUS DO SUL<br>BR 476, Km 273 <br>SÃO MATEUS DO SUL / PR<br>Contato:<br> Telefone: (41) 3535-2123<br> Email: del02.pr@prf.gov.br<br>del02p04.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -50.374896,-25.894151,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-TIBAGI</name>
+        <description><![CDATA[Unidade Operacional (UOP) TIBAGI<br>BR 376, Km 412 VILA IZABEL<br>TIBAGI / PR<br>Contato:<br>    Telefone: (41) 3535-2135<br>    Email: del03.pr@prf.gov.br<br>del03p02.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -50.639746,-24.631548,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-TIJUCAS DO SUL</name>
+        <description><![CDATA[Unidade Operacional (UOP) ALTO DA SERRA<br>BR 376 Km 662 <br>TIJUCAS DO SUL / PR<br>Contato:<br>    Telefone: (41) 3535-2119<br>    Email: del01.pr@prf.gov.br<br>del01p04.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -48.977444,-25.853139,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PR-UBIRATÃ</name>
+        <description><![CDATA[Unidade Operacional (UOP) UBIRATÃ<br>BR 369, Km 446 <br>UBIRATÃ / PR<br>Contato:<br> Telefone: (41) 3535-2144<br> Email: del04.pr@prf.gov.br<br>del04p03.pr@prf.gov.br<br>Horário funcionamento: 24h, diariamente]]></description>
+        <styleUrl>#icon-1657-FBC02D</styleUrl>
+        <Point>
+          <coordinates>
+            -52.96788,-24.554904,0
+          </coordinates>
+        </Point>
+      </Placemark>
+    </Folder>
+  </Document>
+</kml>
