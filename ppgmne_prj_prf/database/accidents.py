@@ -104,6 +104,8 @@ class Accidents:
         }
 
     def extract(self):
+        """Método para extração dos do histórico de acidentes"""
+
         logger.info(
             "Início da leitura dos registros de acidentes."
         ) if self.verbose else None
@@ -161,6 +163,8 @@ class Accidents:
         logger.info(f"Fim da extração dos dados.")
 
     def transform(self):
+        """Método para pré-processamento do histórico de acidentes"""
+
         logger.info("Início do pré processamento.") if self.verbose else None
 
         cache_path = PATH_DATA_PRF_CACHE / f"{self.name}.pkl"
@@ -239,7 +243,14 @@ class Accidents:
 
     #######################################################################
 
-    def __print_df_shape(self, df):
+    def __print_df_shape(self, df: pd.DataFrame):
+        """Método para impressão das dimensões de um data frame
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            _description_
+        """
         logger.info(f"df.shape: {df.shape}")
 
     def __get_polygon(self):

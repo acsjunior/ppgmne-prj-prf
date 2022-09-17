@@ -20,6 +20,8 @@ class Stations:
         self.read_cache = read_cache
 
     def transform(self):
+        """Método para o pré-processamento dos dados das estações policiais"""
+
         logger.info(
             "Convertendo os dados das estações policiais para GeoJson."
         ) if self.verbose else None
