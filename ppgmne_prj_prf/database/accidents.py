@@ -259,7 +259,7 @@ class Accidents:
         self.__print_df_shape(df)
 
         logger.info(f"Identifica o cluster de cada ponto.") if self.verbose else None
-        df = self.__get_clusters(df)
+        df = self.__get_point_clusters(df)
         self.__print_df_shape(df)
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
@@ -527,7 +527,7 @@ class Accidents:
 
         return df_out
 
-    def __get_clusters(self, df: pd.DataFrame) -> pd.DataFrame:
+    def __get_point_clusters(self, df: pd.DataFrame) -> pd.DataFrame:
         """Método para clusterização dos pontos de acidentes.
 
         Aplica o método hierárquico de Ward.
