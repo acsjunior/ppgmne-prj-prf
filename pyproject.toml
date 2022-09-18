@@ -18,6 +18,7 @@ Shapely = "^1.8.4"
 haversine = "^2.7.0"
 scipy = "^1.9.1"
 kml2geojson = "^5.1.0"
+holidays = "^0.16"
 
 
 [tool.poetry.group.dev.dependencies]

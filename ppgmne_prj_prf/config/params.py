@@ -16,5 +16,7 @@ STR_COLS_TO_UPPER = ["municipio", "regional", "delegacia", "uop"]
 
 COORDS_MIN_DECIMAL_PLACES = 3
 
+COORDS_PRECISION = 2
+
 # Parâmetros do IBGE
 IBGE_YEAR = 2019
