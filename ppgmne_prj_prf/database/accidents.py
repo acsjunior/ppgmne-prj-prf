@@ -559,30 +559,30 @@ class Accidents:
         df_point["cluster"] = (hc.fit_predict(df_cluster)).astype(str)
 
         # Calcula as estatísticas por cluster:
-        df_out = None
+        df_stats = None
         for cluster in df_point["cluster"].value_counts().index:
-            df_stats = pd.DataFrame(
+            df_stats_i = pd.DataFrame(
                 df_point[df_point["cluster"] == cluster]["point_acc"].describe()
             ).T
-            df_stats["cluster"] = cluster
-            if df_out is None:
-                df_out = df_stats.copy()
+            df_stats_i["cluster"] = cluster
+            if df_stats is None:
+                df_stats = df_stats_i.copy()
             else:
-                df_out = pd.concat([df_out, df_stats])
-        df_out = df_out.sort_values(by="mean").reset_index(drop=True)
+                df_stats = pd.concat([df_stats, df_stats_i])
+        df_stats = df_stats.sort_values(by="mean").reset_index(drop=True)
 
         # Armazena as estatísticas:
         # TODO
 
         # Renomeia os clusters:
         clusters = np.arange(1, N_CLUSTERS + 1, 1)
-        df_out["point_cluster"] = clusters
-        df_out["point_cluster"] = pd.Categorical(
-            df_out["point_cluster"], categories=clusters, ordered=True
+        df_stats["point_cluster"] = clusters
+        df_stats["point_cluster"] = pd.Categorical(
+            df_stats["point_cluster"], categories=clusters, ordered=True
         )
 
         # Inclui os clusters renomeados na base de pontos:
-        df_point = df_point.merge(df_out[["cluster", "point_cluster"]], on="cluster")
+        df_point = df_point.merge(df_stats[["cluster", "point_cluster"]], on="cluster")
 
         # Armazena a base de clusters:
         # TODO
