@@ -149,6 +149,22 @@ test-minimal = ["pytest"]
 test-no-codebase = ["Pillow", "matplotlib", "pytest"]
 
 [[package]]
+name = "convertdate"
+version = "2.4.0"
+description = "Converts between Gregorian dates and other calendar systems"
+category = "main"
+optional = false
+python-versions = "<4,>=3.7"
+
+[package.dependencies]
+pymeeus = ">=0.3.13,<=1"
+
+[package.extras]
+dev = ["black", "build", "isort", "pylint"]
+docs = ["myst-parser", "sphinx", "sphinx-rtd-theme"]
+tests = ["coverage"]
+
+[[package]]
 name = "cycler"
 version = "0.11.0"
 description = "Composable style cycles"
@@ -267,6 +283,28 @@ description = "Calculate the distance between 2 points on Earth."
 category = "main"
 optional = false
 python-versions = ">=3.5"
+
+[[package]]
+name = "hijri-converter"
+version = "2.2.4"
+description = "Accurate Hijri-Gregorian dates converter based on the Umm al-Qura calendar"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
+name = "holidays"
+version = "0.16"
+description = "Generate and work with holidays in Python"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+convertdate = ">=2.3.0"
+hijri-converter = "*"
+korean-lunar-calendar = "*"
+python-dateutil = "*"
 
 [[package]]
 name = "ipykernel"
@@ -410,6 +448,14 @@ python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
 click = ">=8.0.1"
+
+[[package]]
+name = "korean-lunar-calendar"
+version = "0.3.1"
+description = "Korean Lunar Calendar"
+category = "main"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "loguru"
@@ -725,6 +771,14 @@ python-versions = ">=3.6"
 plugins = ["importlib-metadata"]
 
 [[package]]
+name = "PyMeeus"
+version = "0.5.11"
+description = "Python implementation of Jean Meeus astronomical routines"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "Pyomo"
 version = "6.4.2"
 description = "Pyomo: Python Optimization Modeling Objects"
@@ -981,7 +1035,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.12"
-content-hash = "8d29e04b6d85a0fe3b8c782bf5252c9119723d8bb2b631a01fcc299329a952f0"
+content-hash = "946da17fef4d089d2952d010d37251f9464d4c11b8ae555f739f8f6fdf4e315e"
 
 [metadata.files]
 appnope = [
@@ -1182,6 +1236,10 @@ contourpy = [
     {file = "contourpy-1.0.5-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:a30e95274f5c0e007ccc759ec258aa5708c534ec058f153ee25ac700a2f1438b"},
     {file = "contourpy-1.0.5.tar.gz", hash = "sha256:896631cd40222aef3697e4e51177d14c3709fda49d30983269d584f034acc8a4"},
 ]
+convertdate = [
+    {file = "convertdate-2.4.0-py3-none-any.whl", hash = "sha256:fcffe3a67522172648cf03b0c3757cfd079726fe5ae04ce29989ad3958039e4e"},
+    {file = "convertdate-2.4.0.tar.gz", hash = "sha256:770c6b2195544d3e451e230b3f1c9b121ed02680b877f896306a04cf6f26b48f"},
+]
 cycler = [
     {file = "cycler-0.11.0-py3-none-any.whl", hash = "sha256:3a27e95f763a428a739d2add979fa7494c912a32c17c4c38c4d5f082cad165a3"},
     {file = "cycler-0.11.0.tar.gz", hash = "sha256:9c87405839a19696e837b3b818fed3f5f69f16f1eec1a1ad77e043dcea9c772f"},
@@ -1264,6 +1322,14 @@ gurobipy = [
 haversine = [
     {file = "haversine-2.7.0-py2.py3-none-any.whl", hash = "sha256:4fdf9aebb4cc59c7de6fcb06f7afa6ab54720c5d9c91dac8c173b9213920434c"},
     {file = "haversine-2.7.0.tar.gz", hash = "sha256:9dd62c95bff9c43eb898604625e80db68b8b9e91a5111338f55ebcf470dd5a3d"},
+]
+hijri-converter = [
+    {file = "hijri-converter-2.2.4.tar.gz", hash = "sha256:9e1d9fa4c220f6867da2abb1a96240675ae974abba951c686a781f4ef6ac218f"},
+    {file = "hijri_converter-2.2.4-py3-none-any.whl", hash = "sha256:5ed4f4c284626e3916cd770e09346d5cc319e2a7762c22357838864908fd6e6d"},
+]
+holidays = [
+    {file = "holidays-0.16-py3-none-any.whl", hash = "sha256:dd581b8a3fe0642bd8d0c8e9181df933c62c200bbf38ba31aae7f7fb4f3f9d7a"},
+    {file = "holidays-0.16.tar.gz", hash = "sha256:1d7f4fd6b1980298fbbb3316b0d57fa6f15b5313074cdacc12a3ab93bf3ca5cd"},
 ]
 ipykernel = [
     {file = "ipykernel-6.15.3-py3-none-any.whl", hash = "sha256:befe3736944b21afec8e832725e9a45f254c8bd9afc40b61d6661c97e45aff5a"},
@@ -1362,6 +1428,10 @@ kiwisolver = [
 kml2geojson = [
     {file = "kml2geojson-5.1.0-py3-none-any.whl", hash = "sha256:1fc3096a6feb3728e97521db30f4c55982f3f7ad299892687a41b1b5528f55df"},
     {file = "kml2geojson-5.1.0.tar.gz", hash = "sha256:76a69f598e55d2eff90332e87ee9480c36120f60e6f5d6b5aaeba63ce92a3dfa"},
+]
+korean-lunar-calendar = [
+    {file = "korean_lunar_calendar-0.3.1-py3-none-any.whl", hash = "sha256:392757135c492c4f42a604e6038042953c35c6f449dda5f27e3f86a7f9c943e5"},
+    {file = "korean_lunar_calendar-0.3.1.tar.gz", hash = "sha256:eb2c485124a061016926bdea6d89efdf9b9fdbf16db55895b6cf1e5bec17b857"},
 ]
 loguru = [
     {file = "loguru-0.6.0-py3-none-any.whl", hash = "sha256:4e2414d534a2ab57573365b3e6d0234dfb1d84b68b7f3b948e6fb743860a77c3"},
@@ -1694,6 +1764,9 @@ pydantic = [
 Pygments = [
     {file = "Pygments-2.13.0-py3-none-any.whl", hash = "sha256:f643f331ab57ba3c9d89212ee4a2dabc6e94f117cf4eefde99a0574720d14c42"},
     {file = "Pygments-2.13.0.tar.gz", hash = "sha256:56a8508ae95f98e2b9bdf93a6be5ae3f7d8af858b43e02c5a2ff083726be40c1"},
+]
+PyMeeus = [
+    {file = "PyMeeus-0.5.11.tar.gz", hash = "sha256:bb9d670818d8b0594317b48a7dadea02a0594e5344263bf2054e1a011c8fed55"},
 ]
 Pyomo = [
     {file = "Pyomo-6.4.2-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:f78070edfa21f832b92f0876c302d9014576225515507a244a116f9bd8815f66"},

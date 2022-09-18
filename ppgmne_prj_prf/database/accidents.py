@@ -1,5 +1,6 @@
 import json
 
+import holidays
 import pandas as pd
 import scipy.stats as stats
 from loguru import logger
@@ -9,6 +10,7 @@ from shapely.geometry import Point, Polygon
 
 from ppgmne_prj_prf.config.params import (
     COORDS_MIN_DECIMAL_PLACES,
+    COORDS_PRECISION,
     STR_COLS_TO_LOWER,
     STR_COLS_TO_UPPER,
     UF,
@@ -197,6 +199,12 @@ class Accidents:
         df["data_hora"] = pd.to_datetime(df["data_inversa"] + " " + df["horario"])
         df.drop(columns=["data_inversa", "horario"], inplace=True)
 
+        logger.info(
+            "Criando as flags de feriado e final de semana."
+        ) if self.verbose else None
+        df = self.__classify_holidays(df)
+        df["is_weekend"] = df["data_hora"].dt.weekday >= 5
+
         logger.info("Padronizando os campos do tipo string.") if self.verbose else None
         df = clean_string(df, STR_COLS_TO_UPPER, "upper")
         df = clean_string(df, STR_COLS_TO_LOWER)
@@ -229,6 +237,20 @@ class Accidents:
             f"Eliminando as coordenadas outliers por delegacia."
         ) if self.verbose else None
         df = self.__remove_outlier_coords(df)
+        self.__print_df_shape(df)
+
+        logger.info(
+            f"Criando as coordendas dos pontos (arredondamento)."
+        ) if self.verbose else None
+        df["point_lat"] = df["latitude"].round(COORDS_PRECISION)
+        df["point_lon"] = df["longitude"].round(COORDS_PRECISION)
+
+        logger.info(f"Criando a identificação dos pontos.") if self.verbose else None
+        df = self.__identify_point(df)
+        self.__print_df_shape(df)
+
+        logger.info(f"Calculando as estatísticas dos pontos.") if self.verbose else None
+        df = self.__get_point_stats(df)
         self.__print_df_shape(df)
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
@@ -391,5 +413,111 @@ class Accidents:
         right_uops = df_out["uop"].map(uops_to_replace)
         df_out["delegacia"] = right_dels.combine_first(df_out["delegacia"])
         df_out["uop"] = right_uops.combine_first(df_out["uop"])
+
+        return df_out
+
+    def __classify_holidays(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para classificar uma data como feriado (True) ou não (False).
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Data frame completo.
+
+        Returns
+        -------
+        pd.DataFrame
+            Data frame com a flag "is_holiday".
+        """
+        br_holidays = holidays.country_holidays("BR", subdiv=self.uf)
+        df["is_holiday"] = ~(df["data_hora"].apply(br_holidays.get)).isna()
+
+        return df
+
+    def __identify_point(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para criar identificação única e padronizar o nome do município dos pontos.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Data frame completo.
+
+        Returns
+        -------
+        pd.DataFrame
+            Data frame com os campos "point_mun" e "point_name".
+        """
+
+        # Identifica o município do ponto por ordem de frequência de acidentes:
+        df_mun = (
+            df.groupby(["point_lat", "point_lon", "municipio"])["data_hora"]
+            .count()
+            .reset_index(name="n_accidents")
+        )
+        df_mun["seq"] = df_mun.groupby(["point_lat", "point_lon"])["n_accidents"].rank(
+            "first", ascending=False
+        )
+        df_mun = df_mun[df_mun["seq"] == 1].copy()
+        df_mun.rename(columns={"municipio": "point_mun"}, inplace=True)
+
+        # Cria um identificador único para o ponto:
+        zfill_param = len(
+            str(
+                df_mun.groupby(["point_mun"])["point_lat"]
+                .count()
+                .reset_index(name="n")["n"]
+                .max()
+            )
+        )
+        df_mun.sort_values(by=["point_mun", "point_lat", "point_lon"], inplace=True)
+        df_mun["x"] = 1
+        df_mun["suf"] = (
+            (df_mun.groupby("point_mun")["x"].rank("first"))
+            .astype(int)
+            .astype(str)
+            .str.zfill(zfill_param)
+        )
+        df_mun["point_name"] = df_mun["point_mun"] + " " + df_mun["suf"]
+
+        # Remove os campos desnecessários:
+        df_mun.drop(columns=["n_accidents", "seq", "x", "suf"], inplace=True)
+
+        # Inclui os campos no df final:
+        df_out = df.merge(df_mun, on=["point_lat", "point_lon"])
+
+        return df_out
+
+    def __get_point_stats(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para calcular o número de acidentes e a média mensal de acidentes por ponto.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Data frame completo.
+
+        Returns
+        -------
+        pd.DataFrame
+            Data frame com os campos "point_acc" e "point_acc_per_month".
+        """
+        # Calcula o número de meses do primeiro até o último acidente da base:
+        n_months = (
+            1
+            + df["data_hora"].dt.to_period("M").view(dtype="int64").max()
+            - df["data_hora"].dt.to_period("M").view(dtype="int64").min()
+        )
+
+        # Calcula o número de acidentes por ponto:
+        df_avg = (
+            df.groupby(["point_name"])["data_hora"]
+            .count()
+            .reset_index(name="point_acc")
+        )
+
+        # Calcula o número de acidentes por mês em cada ponto:
+        df_avg["point_acc_per_month"] = df_avg["point_acc"] / n_months
+
+        # Inclui os dados no df final:
+        df_out = df.merge(df_avg, on="point_name")
 
         return df_out
