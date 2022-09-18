@@ -1,16 +1,21 @@
 import json
 
 import holidays
+import numpy as np
 import pandas as pd
 import scipy.stats as stats
 from loguru import logger
 from pandera import Column, DataFrameSchema
 from pandera.errors import SchemaError
 from shapely.geometry import Point, Polygon
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.preprocessing import StandardScaler
 
 from ppgmne_prj_prf.config.params import (
+    CLUSTERING_FEATS,
     COORDS_MIN_DECIMAL_PLACES,
     COORDS_PRECISION,
+    N_CLUSTERS,
     STR_COLS_TO_LOWER,
     STR_COLS_TO_UPPER,
     UF,
@@ -251,6 +256,10 @@ class Accidents:
 
         logger.info(f"Calculando as estatísticas dos pontos.") if self.verbose else None
         df = self.__get_point_stats(df)
+        self.__print_df_shape(df)
+
+        logger.info(f"Identifica o cluster de cada ponto.") if self.verbose else None
+        df = self.__get_clusters(df)
         self.__print_df_shape(df)
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
@@ -515,5 +524,70 @@ class Accidents:
 
         # Inclui os dados no df final:
         df_out = df.merge(df_stats, on="point_name")
+
+        return df_out
+
+    def __get_clusters(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para clusterização dos pontos de acidentes.
+
+        Aplica o método hierárquico de Ward.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Data frame completo.
+
+        Returns
+        -------
+        pd.DataFrame
+            Data frame com o cluster de cada ponto.
+        """
+
+        df_point = (
+            df[["point_name"] + CLUSTERING_FEATS]
+            .drop_duplicates()
+            .reset_index(drop=True)
+        )
+
+        df_cluster = df_point[CLUSTERING_FEATS].copy()
+        df_cluster.iloc[:, :] = StandardScaler().fit_transform(df_cluster)
+
+        hc = AgglomerativeClustering(
+            n_clusters=N_CLUSTERS, affinity="euclidean", linkage="ward"
+        )
+
+        df_point["cluster"] = (hc.fit_predict(df_cluster)).astype(str)
+
+        # Calcula as estatísticas por cluster:
+        df_out = None
+        for cluster in df_point["cluster"].value_counts().index:
+            df_stats = pd.DataFrame(
+                df_point[df_point["cluster"] == cluster]["point_acc"].describe()
+            ).T
+            df_stats["cluster"] = cluster
+            if df_out is None:
+                df_out = df_stats.copy()
+            else:
+                df_out = pd.concat([df_out, df_stats])
+        df_out = df_out.sort_values(by="mean").reset_index(drop=True)
+
+        # Armazena as estatísticas:
+        # TODO
+
+        # Renomeia os clusters:
+        clusters = np.arange(1, N_CLUSTERS + 1, 1)
+        df_out["point_cluster"] = clusters
+        df_out["point_cluster"] = pd.Categorical(
+            df_out["point_cluster"], categories=clusters, ordered=True
+        )
+
+        # Inclui os clusters renomeados na base de pontos:
+        df_point = df_point.merge(df_out[["cluster", "point_cluster"]], on="cluster")
+
+        # Armazena a base de clusters:
+        # TODO
+
+        # Inclui os clusters na base final:
+        df_out = df.merge(df_point[["point_name", "point_cluster"]], on="point_name")
 
         return df_out
