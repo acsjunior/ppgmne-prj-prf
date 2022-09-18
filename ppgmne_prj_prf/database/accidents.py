@@ -488,7 +488,7 @@ class Accidents:
         return df_out
 
     def __get_point_stats(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Método para calcular o número de acidentes e a média mensal de acidentes por ponto.
+        """Método para calcular as estatísticas por ponto.
 
         Parameters
         ----------
@@ -498,26 +498,22 @@ class Accidents:
         Returns
         -------
         pd.DataFrame
-            Data frame com os campos "point_acc" e "point_acc_per_month".
+            Data frame com as estatísticas calculadas.
         """
-        # Calcula o número de meses do primeiro até o último acidente da base:
-        n_months = (
-            1
-            + df["data_hora"].dt.to_period("M").view(dtype="int64").max()
-            - df["data_hora"].dt.to_period("M").view(dtype="int64").min()
+        # Calcula as estatísticas:
+        df_stats = (
+            df.groupby(["point_name"])
+            .agg(
+                point_acc=("data_hora", "count"),
+                point_acc_holiday=("is_holiday", sum),
+                point_acc_weekend=("is_weekend", sum),
+                point_inj=("feridos_graves", sum),
+                point_dead=("mortos", sum),
+            )
+            .reset_index()
         )
-
-        # Calcula o número de acidentes por ponto:
-        df_avg = (
-            df.groupby(["point_name"])["data_hora"]
-            .count()
-            .reset_index(name="point_acc")
-        )
-
-        # Calcula o número de acidentes por mês em cada ponto:
-        df_avg["point_acc_per_month"] = df_avg["point_acc"] / n_months
 
         # Inclui os dados no df final:
-        df_out = df.merge(df_avg, on="point_name")
+        df_out = df.merge(df_stats, on="point_name")
 
         return df_out
