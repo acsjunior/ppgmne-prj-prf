@@ -120,49 +120,25 @@ class Accidents:
             logger.info("Fim da extração dos dados.")
             return
 
-        df_out = pd.DataFrame()
-        for year in self.urls.keys():
-
-            # Lê os dados dos acidentes:
-            url = self.urls[year]
-            file_name = f"datatran{year}.csv"
-            df = csv_zip_to_df(url, file_name)
-            df["ano"] = year
-
-            logger.info(
-                f"Lendo os registros de acidentes de {year}."
-            ) if self.verbose else None
-            # Valida os dados de entrada:
-            try:
-                df = DataFrameSchema(
-                    columns=self.df_schema_in,
-                    unique=self.key_in,
-                    coerce=True,
-                    strict="filter",
-                ).validate(df)
-            except SchemaError as se:
-                logger.error(f"Erro ao validar os dados dos acidentes de {year}.")
-                logger.error(se)
-
-            # Concatena os anos:
-            if df_out.shape[0] == 0:
-                df_out = df.copy()
-            else:
-                df_out = pd.concat([df_out, df], ignore_index=True)
+        # Leitura dos registros dos acidentes:
+        df = self.__read_accidents()
+        self.__print_df_shape(df)
 
         # Filtra a UF desejada:
         logger.info(
             f"Selecionando somente os dados do {self.uf}."
         ) if self.verbose else None
-        df_out = df_out[df_out["uf"].str.upper() == self.uf].copy()
+        df = df[df["uf"].str.upper() == self.uf].copy()
+        self.__print_df_shape(df)
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
         if not self.read_cache:
             logger.info(f"Armazenado {cache_path}.")
-            df_out.to_pickle(cache_path)
+            df.to_pickle(cache_path)
 
-        self.df_accidents = df_out.copy()
+        self.df_accidents = df.copy()
         logger.info(f"Fim da extração dos dados.")
+        self.__print_df_shape(df)
 
     def transform(self):
         """Método para pré-processamento do histórico de acidentes"""
@@ -260,6 +236,40 @@ class Accidents:
             _description_
         """
         logger.info(f"df.shape: {df.shape}")
+
+    def __read_accidents(self) -> pd.DataFrame:
+
+        df_out = pd.DataFrame()
+        for year in self.urls.keys():
+
+            # Lê os dados dos acidentes:
+            url = self.urls[year]
+            file_name = f"datatran{year}.csv"
+            df = csv_zip_to_df(url, file_name)
+            df["ano"] = year
+
+            logger.info(
+                f"Lendo os registros de acidentes de {year}."
+            ) if self.verbose else None
+            # Valida os dados de entrada:
+            try:
+                df = DataFrameSchema(
+                    columns=self.df_schema_in,
+                    unique=self.key_in,
+                    coerce=True,
+                    strict="filter",
+                ).validate(df)
+            except SchemaError as se:
+                logger.error(f"Erro ao validar os dados dos acidentes de {year}.")
+                logger.error(se)
+
+            # Concatena os anos:
+            if df_out.shape[0] == 0:
+                df_out = df.copy()
+            else:
+                df_out = pd.concat([df_out, df], ignore_index=True)
+
+        return df_out
 
     def __get_polygon(self):
         """Método para carregamento do json com as coordenadas e construção do polígono da região de interesse.
