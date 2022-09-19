@@ -1,4 +1,4 @@
-# Parâmetros dos acidentes:
+# Parâmetros da PRF:
 UF = "PR"
 
 STR_COLS_TO_LOWER = [
@@ -20,6 +20,8 @@ COORDS_PRECISION = 2
 CLUSTERING_FEATS = ["point_n_accidents"]
 N_CLUSTERS = 8
 CLUSTER_DMAX = {1: 180, 2: 180, 3: 120, 4: 120, 5: 120, 6: 60, 7: 60, 8: 60}
+
+MIN_DIST_TOLERANCE = 2
 
 # Parâmetros do IBGE
 IBGE_YEAR = 2019
