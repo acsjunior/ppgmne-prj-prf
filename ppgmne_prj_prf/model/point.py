@@ -12,7 +12,7 @@ from ppgmne_prj_prf.config.params import (
     COORDS_PRECISION,
     N_CLUSTERS,
 )
-from ppgmne_prj_prf.config.paths import PATH_DATA_PRF_CACHE_DATABASE
+from ppgmne_prj_prf.config.paths import PATH_DATA_PRF_CACHE_MODEL
 
 
 class Point:
@@ -21,18 +21,29 @@ class Point:
         df_accidents: pd.DataFrame,
         df_stations: pd.DataFrame,
         verbose: bool = True,
+        read_cache: bool = False,
         cluster_cache: bool = False,
     ):
+        self.name = "points"
         self.df_accidents = df_accidents
         self.df_stations = df_stations
         self.df_point = pd.DataFrame()
         self.verbose = verbose
+        self.read_cache = read_cache
         self.cluster_cache = cluster_cache
 
     def transform(self):
+        """Método para pré-processamento dos pontos de acidentes"""
 
         logger.info("Início do pré processamento.") if self.verbose else None
         df = self.df_accidents.copy()
+
+        cache_path = PATH_DATA_PRF_CACHE_MODEL / f"{self.name}.pkl"
+        if self.read_cache:
+            logger.info("Modo de leitura da cache ativo.")
+            self.df_point = pd.read_pickle(cache_path)
+            logger.info("Fim do pré-processamento.")
+            return
 
         logger.info(
             f"Criando as coordendas dos pontos (arredondamento)."
@@ -58,6 +69,11 @@ class Point:
 
         logger.info(f"Incluindo o DMAX na base.") if self.verbose else None
         df["dist_max"] = df["cluster"].map(CLUSTER_DMAX)
+
+        # Armazena a cache caso o modo de leitura da cache não esteja ativo:
+        if not self.read_cache:
+            logger.info(f"Armazenado {cache_path}.")
+            df.to_pickle(cache_path)
 
         self.df_point = df.copy()
         logger.info(f"Fim do pré-processamento.") if self.verbose else None
@@ -177,7 +193,7 @@ class Point:
         """
 
         # Se a leitura de cache estiver ativa, carrega a base de clusters da cache:
-        clusters_path = PATH_DATA_PRF_CACHE_DATABASE / f"hc_clusters.pkl"
+        clusters_path = PATH_DATA_PRF_CACHE_MODEL / f"hc_clusters.pkl"
         if self.cluster_cache:
             logger.info("Lendo a cache da base de clusters.")
             df_point = pd.read_pickle(clusters_path)
@@ -202,7 +218,7 @@ class Point:
         )
 
         # Armazena o pickle do modelo caso o modo de leitura da cache não esteja ativo:
-        model_path = PATH_DATA_PRF_CACHE_DATABASE / "hc_model.pkl"
+        model_path = PATH_DATA_PRF_CACHE_MODEL / "hc_model.pkl"
         if not self.cluster_cache:
             logger.info(f"Armazenado o modelo de clustering em {model_path}.")
             pickle.dump(hc, open(model_path, "wb"))
@@ -223,7 +239,7 @@ class Point:
         df_stats = df_stats.sort_values(by="mean").reset_index(drop=True)
 
         # Armazena as estatísticas caso o modo de leitura da cache não esteja ativo:
-        stats_path = PATH_DATA_PRF_CACHE_DATABASE / f"hc_stats.pkl"
+        stats_path = PATH_DATA_PRF_CACHE_MODEL / f"hc_stats.pkl"
         if not self.cluster_cache:
             logger.info(f"Armazenado as estatísticas de clustering em {stats_path}.")
             df_stats.to_pickle(stats_path)
