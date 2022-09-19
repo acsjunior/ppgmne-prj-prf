@@ -596,12 +596,6 @@ class Accidents:
                 df_stats = pd.concat([df_stats, df_stats_i])
         df_stats = df_stats.sort_values(by="mean").reset_index(drop=True)
 
-        # Armazena as estatísticas caso o modo de leitura da cache não esteja ativo:
-        stats_path = PATH_DATA_PRF_CACHE_DATABASE / f"hc_stats.pkl"
-        if not self.cluster_cache:
-            logger.info(f"Armazenado as estatísticas de clustering em {stats_path}.")
-            df_stats.to_pickle(stats_path)
-
         # Renomeia os clusters:
         clusters = np.arange(1, N_CLUSTERS + 1, 1)
         df_stats["point_cluster"] = clusters
@@ -616,6 +610,12 @@ class Accidents:
         if not self.cluster_cache:
             logger.info(f"Armazenado a base de clusters em {clusters_path}.")
             df_point[["point_name", "point_cluster"]].to_pickle(clusters_path)
+
+        # Armazena as estatísticas caso o modo de leitura da cache não esteja ativo:
+        stats_path = PATH_DATA_PRF_CACHE_DATABASE / f"hc_stats.pkl"
+        if not self.cluster_cache:
+            logger.info(f"Armazenado as estatísticas de clustering em {stats_path}.")
+            df_stats.drop(columns="cluster").to_pickle(stats_path)
 
         # Inclui os clusters na base final:
         df_out = df.merge(df_point[["point_name", "point_cluster"]], on="point_name")
