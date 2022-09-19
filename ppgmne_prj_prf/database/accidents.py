@@ -1,4 +1,5 @@
 import json
+import pickle
 
 import holidays
 import numpy as np
@@ -33,13 +34,19 @@ from ppgmne_prj_prf.database.utils import (
 
 
 class Accidents:
-    def __init__(self, verbose=True, read_cache=False):
+    def __init__(self, verbose=True, read_cache=False, cluster_cache=False) -> None:
         self.name_raw = "accidents_raw"
         self.name = "accidents"
         self.uf = UF
         self.df_accidents = pd.DataFrame()
         self.verbose = verbose
         self.read_cache = read_cache
+        self.cluster_cache = cluster_cache
+
+        if cluster_cache:
+            logger.info(
+                "Modo de leitura de cache ativo, portanto, cluster_cache ignorada."
+            )
 
         logger.info("Lendo as urls dos acidentes.") if self.verbose else None
         with open(PATH_DATA_PRF / "accidents.json") as file:
@@ -543,6 +550,18 @@ class Accidents:
             Data frame com o cluster de cada ponto.
         """
 
+        # Se a leitura de cache estiver ativa, carrega a base de clusters da cache:
+        clusters_path = PATH_DATA_PRF_CACHE_DATABASE / f"hc_clusters.pkl"
+        if self.cluster_cache:
+            logger.info("Lendo a cache da base de clusters.")
+            df_point = pd.read_pickle(clusters_path)
+
+            # Inclui os clusters na base final:
+            df_out = df.merge(
+                df_point[["point_name", "point_cluster"]], on="point_name"
+            )
+            return df_out
+
         df_point = (
             df[["point_name"] + CLUSTERING_FEATS]
             .drop_duplicates()
@@ -555,6 +574,12 @@ class Accidents:
         hc = AgglomerativeClustering(
             n_clusters=N_CLUSTERS, affinity="euclidean", linkage="ward"
         )
+
+        # Armazena o pickle do modelo caso o modo de leitura da cache não esteja ativo:
+        model_path = PATH_DATA_PRF_CACHE_DATABASE / "hc_model.pkl"
+        if not self.cluster_cache:
+            logger.info(f"Armazenado o modelo de clustering em {model_path}.")
+            pickle.dump(hc, open(model_path, "wb"))
 
         df_point["cluster"] = (hc.fit_predict(df_cluster)).astype(str)
 
@@ -571,8 +596,11 @@ class Accidents:
                 df_stats = pd.concat([df_stats, df_stats_i])
         df_stats = df_stats.sort_values(by="mean").reset_index(drop=True)
 
-        # Armazena as estatísticas:
-        # TODO
+        # Armazena as estatísticas caso o modo de leitura da cache não esteja ativo:
+        stats_path = PATH_DATA_PRF_CACHE_DATABASE / f"hc_stats.pkl"
+        if not self.cluster_cache:
+            logger.info(f"Armazenado as estatísticas de clustering em {stats_path}.")
+            df_stats.to_pickle(stats_path)
 
         # Renomeia os clusters:
         clusters = np.arange(1, N_CLUSTERS + 1, 1)
@@ -584,8 +612,10 @@ class Accidents:
         # Inclui os clusters renomeados na base de pontos:
         df_point = df_point.merge(df_stats[["cluster", "point_cluster"]], on="cluster")
 
-        # Armazena a base de clusters:
-        # TODO
+        # Armazena a base de clusters caso o modo de leitura da cache não esteja ativo:
+        if not self.cluster_cache:
+            logger.info(f"Armazenado a base de clusters em {clusters_path}.")
+            df_point[["point_name", "point_cluster"]].to_pickle(clusters_path)
 
         # Inclui os clusters na base final:
         df_out = df.merge(df_point[["point_name", "point_cluster"]], on="point_name")
