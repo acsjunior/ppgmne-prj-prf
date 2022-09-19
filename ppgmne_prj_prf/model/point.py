@@ -10,9 +10,11 @@ from ppgmne_prj_prf.config.params import (
     CLUSTER_DMAX,
     CLUSTERING_FEATS,
     COORDS_PRECISION,
+    MIN_DIST_TOLERANCE,
     N_CLUSTERS,
 )
 from ppgmne_prj_prf.config.paths import PATH_DATA_PRF_CACHE_MODEL
+from ppgmne_prj_prf.model.utils import get_distance_matrix
 
 
 class Point:
@@ -26,11 +28,16 @@ class Point:
     ):
         self.name = "points"
         self.df_accidents = df_accidents
-        self.df_stations = df_stations
         self.df_point = pd.DataFrame()
         self.verbose = verbose
         self.read_cache = read_cache
         self.cluster_cache = cluster_cache
+
+        # Seleciona as UOPS:
+        df_uops = df_stations.query('type == "UOP"').copy()
+        df_uops["latitude"] = df_uops["latitude"].round(COORDS_PRECISION)
+        df_uops["longitude"] = df_uops["longitude"].round(COORDS_PRECISION)
+        self.df_uops = df_uops
 
     def transform(self):
         """Método para pré-processamento dos pontos de acidentes"""
@@ -69,6 +76,35 @@ class Point:
 
         logger.info(f"Incluindo o DMAX na base.") if self.verbose else None
         df["dist_max"] = df["cluster"].map(CLUSTER_DMAX)
+
+        logger.info(
+            f"Encontrando o ponto correspondente para cada UOP."
+        ) if self.verbose else None
+        df_corresp = self.__find_corresp_point(df)
+
+        logger.info(
+            f"Renomeando os pontos correspondentes encontrados."
+        ) if self.verbose else None
+        is_corresp_point = ~df_corresp["point_name"].isna()
+        df_to_rename = df_corresp[is_corresp_point][["uop", "point_name"]].rename(
+            columns={"uop": "uop_name", "point_name": "name"}
+        )
+        df = df.merge(df_to_rename, how="left", on="name")
+        df["name"] = df["uop_name"].combine_first(df["name"])
+
+        logger.info(
+            f"Criando as flags 'is_uop' e 'is_only_uop'."
+        ) if self.verbose else None
+        df["is_uop"] = ~df["uop_name"].isna()
+        df["is_only_uop"] = False
+        df.drop(columns="uop_name", inplace=True)
+
+        logger.info(
+            f"Adicionando as UOPs sem registro de acidentes."
+        ) if self.verbose else None
+        df_to_add = self.__get_only_uops(df, df_corresp)
+        df = pd.concat([df, df_to_add], ignore_index=True)
+        self.__print_df_shape(df)
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
         if not self.read_cache:
@@ -284,3 +320,70 @@ class Point:
         df_out.columns = [col.replace(suffix, "") for col in cols]
 
         return df_out
+
+    def __find_corresp_point(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para encontrar o ponto correspondente, na base de pontos, para cada UOP.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Base de pontos.
+
+        Returns
+        -------
+        pd.DataFrame
+            Base de UOPs com os pontos correspondentes encontrados.
+        """
+        # Calcula a matriz de distâncias entre as UOPs e os pontos:
+        df_uops = self.df_uops
+        dist_matrix = get_distance_matrix(
+            df["latitude"], df["longitude"], df_uops["latitude"], df_uops["longitude"]
+        )
+
+        # Transforma a matriz em data frame:
+        df_dist = pd.DataFrame(dist_matrix)
+        df_dist.index = df["name"]
+        df_dist.columns = df_uops["uop"]
+
+        # Encontra o ponto correspondente para cada UOP:
+        names = []
+        for col in df_uops["uop"]:
+            df_sort = df_dist[col].sort_values().head(1).copy()
+            idx = df_sort.index[0]
+            dist = df_sort[idx]
+
+            if dist <= MIN_DIST_TOLERANCE:
+                names.append(idx)
+            else:
+                names.append(np.nan)
+        df_uops["point_name"] = names
+
+        return df_uops
+
+    def __get_only_uops(self, df: pd.DataFrame, df_uops: pd.DataFrame) -> pd.DataFrame:
+        """Método para preparar a base de UOPs (only) para adicionar na base de pontos.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Base de pontos.
+        df_uops : pd.DataFrame
+            Base de UOPs.
+
+        Returns
+        -------
+        pd.DataFrame
+            Base de UOPs (only) para adicionar na basde pontos.
+        """
+        cols = ["latitude", "longitude", "municipality", "uop"]
+        df_only_uops = df_uops[df_uops["point_name"].isna()][cols].rename(
+            columns={"uop": "name"}
+        )
+        if df_only_uops.shape[0] > 0:
+            cols_to_add = [col for col in df.columns if col not in df_only_uops.columns]
+            for col in cols_to_add:
+                df_only_uops[col] = np.nan
+                if col in ["is_uop", "is_only_uop"]:
+                    df_only_uops[col] = True
+
+        return df_only_uops
