@@ -12,7 +12,7 @@ from ppgmne_prj_prf.database.utils import concatenate_dict_of_dicts
 
 
 class Stations:
-    def __init__(self, verbose=True, read_cache=False):
+    def __init__(self, verbose: bool = True, read_cache: bool = False):
         self.name = "stations"
         self.uf = UF
         self.df_stations = pd.DataFrame()

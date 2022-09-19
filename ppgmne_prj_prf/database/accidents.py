@@ -28,19 +28,13 @@ from ppgmne_prj_prf.database.utils import (
 
 
 class Accidents:
-    def __init__(self, verbose=True, read_cache=False, cluster_cache=False) -> None:
+    def __init__(self, verbose: bool = True, read_cache: bool = False) -> None:
         self.name_raw = "accidents_raw"
         self.name = "accidents"
         self.uf = UF
         self.df_accidents = pd.DataFrame()
         self.verbose = verbose
         self.read_cache = read_cache
-        self.cluster_cache = cluster_cache
-
-        if cluster_cache:
-            logger.info(
-                "Modo de leitura de cache ativo, portanto, cluster_cache ignorada."
-            )
 
         logger.info("Lendo as urls dos acidentes.") if self.verbose else None
         with open(PATH_DATA_PRF / "accidents.json") as file:
