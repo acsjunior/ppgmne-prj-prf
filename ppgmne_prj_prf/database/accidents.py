@@ -23,7 +23,7 @@ from ppgmne_prj_prf.config.params import (
 from ppgmne_prj_prf.config.paths import (
     PATH_DATA_IBGE_BORDERS,
     PATH_DATA_PRF,
-    PATH_DATA_PRF_CACHE,
+    PATH_DATA_PRF_CACHE_DATABASE,
 )
 from ppgmne_prj_prf.database.utils import (
     clean_string,
@@ -117,7 +117,7 @@ class Accidents:
             "Início da leitura dos registros de acidentes."
         ) if self.verbose else None
 
-        cache_path = PATH_DATA_PRF_CACHE / f"{self.name_raw}.pkl"
+        cache_path = PATH_DATA_PRF_CACHE_DATABASE / f"{self.name_raw}.pkl"
 
         if self.read_cache:
             logger.info("Modo de leitura da cache ativo.")
@@ -174,7 +174,7 @@ class Accidents:
 
         logger.info("Início do pré processamento.") if self.verbose else None
 
-        cache_path = PATH_DATA_PRF_CACHE / f"{self.name}.pkl"
+        cache_path = PATH_DATA_PRF_CACHE_DATABASE / f"{self.name}.pkl"
         if self.read_cache:
             logger.info("Modo de leitura da cache ativo.")
             self.df_accidents = pd.read_pickle(cache_path)
@@ -263,7 +263,7 @@ class Accidents:
         self.__print_df_shape(df)
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
-        cache_path = PATH_DATA_PRF_CACHE / f"{self.name}.pkl"
+        cache_path = PATH_DATA_PRF_CACHE_DATABASE / f"{self.name}.pkl"
         if not self.read_cache:
             logger.info(f"Armazenado {cache_path}.")
             df.to_pickle(cache_path)

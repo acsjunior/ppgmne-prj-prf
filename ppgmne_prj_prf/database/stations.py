@@ -7,7 +7,7 @@ from loguru import logger
 from unidecode import unidecode
 
 from ppgmne_prj_prf.config.params import UF
-from ppgmne_prj_prf.config.paths import PATH_DATA_PRF, PATH_DATA_PRF_CACHE
+from ppgmne_prj_prf.config.paths import PATH_DATA_PRF, PATH_DATA_PRF_CACHE_DATABASE
 from ppgmne_prj_prf.database.utils import concatenate_dict_of_dicts
 
 
@@ -24,7 +24,7 @@ class Stations:
 
         logger.info("Início do pré processamento.") if self.verbose else None
 
-        cache_path = PATH_DATA_PRF_CACHE / f"{self.name}.pkl"
+        cache_path = PATH_DATA_PRF_CACHE_DATABASE / f"{self.name}.pkl"
 
         if self.read_cache:
             logger.info("Modo de leitura da cache ativo.")
