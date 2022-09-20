@@ -14,10 +14,10 @@ from ppgmne_prj_prf.config.params import (
     N_CLUSTERS,
 )
 from ppgmne_prj_prf.config.paths import PATH_DATA_PRF_CACHE_MODEL
-from ppgmne_prj_prf.model.utils import get_distance_matrix
+from ppgmne_prj_prf.utils import get_distance_matrix
 
 
-class Point:
+class Points:
     def __init__(
         self,
         df_accidents: pd.DataFrame,
@@ -28,7 +28,7 @@ class Point:
     ):
         self.name = "points"
         self.df_accidents = df_accidents
-        self.df_point = pd.DataFrame()
+        self.df_points = pd.DataFrame()
         self.verbose = verbose
         self.read_cache = read_cache
         self.cluster_cache = cluster_cache
@@ -48,7 +48,7 @@ class Point:
         cache_path = PATH_DATA_PRF_CACHE_MODEL / f"{self.name}.pkl"
         if self.read_cache:
             logger.info("Modo de leitura da cache ativo.")
-            self.df_point = pd.read_pickle(cache_path)
+            self.df_points = pd.read_pickle(cache_path)
             logger.info("Fim do pré-processamento.")
             return
 
@@ -111,7 +111,7 @@ class Point:
             logger.info(f"Armazenado {cache_path}.")
             df.to_pickle(cache_path)
 
-        self.df_point = df.copy()
+        self.df_points = df.copy()
         logger.info(f"Fim do pré-processamento.") if self.verbose else None
         self.__print_df_shape(df)
 

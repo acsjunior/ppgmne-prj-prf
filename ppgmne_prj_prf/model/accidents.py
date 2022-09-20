@@ -20,11 +20,7 @@ from ppgmne_prj_prf.config.paths import (
     PATH_DATA_PRF,
     PATH_DATA_PRF_CACHE_DATABASE,
 )
-from ppgmne_prj_prf.database.utils import (
-    clean_string,
-    csv_zip_to_df,
-    get_decimal_places,
-)
+from ppgmne_prj_prf.utils import clean_string, csv_zip_to_df, get_decimal_places
 
 
 class Accidents:
