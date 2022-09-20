@@ -117,24 +117,21 @@ class Accidents:
             return
 
         # Leitura dos registros dos acidentes:
-        df = self.__read_accidents()
-        self.__print_df_shape(df)
+        df = self.__read_accidents().pipe(self.__trace_df)
 
         # Filtra a UF desejada:
         logger.info(
             f"Selecionando somente os dados do {self.uf}."
         ) if self.verbose else None
-        df = df[df["uf"].str.upper() == self.uf].copy()
-        self.__print_df_shape(df)
+        df = df[df["uf"].str.upper() == self.uf].copy().pipe(self.__trace_df)
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
         if not self.read_cache:
             logger.info(f"Armazenado {cache_path}.")
             df.to_pickle(cache_path)
 
-        self.df_accidents = df.copy()
+        self.df_accidents = df.copy().pipe(self.__trace_df)
         logger.info(f"Fim da extração dos dados.")
-        self.__print_df_shape(df)
 
     def transform(self):
         """Método para pré-processamento do histórico de acidentes"""
@@ -150,67 +147,35 @@ class Accidents:
             return
 
         df = self.df_accidents
-        self.__print_df_shape(df)
 
-        logger.info("Removendo os registros incompletos.") if self.verbose else None
-        df.dropna(inplace=True)
-        self.__print_df_shape(df)
+        logger.info("Removendo registros incompletos.") if self.verbose else None
+        df = df.dropna().pipe(self.__trace_df).copy()
 
-        # Mantém na base somente registros nas delegacias da UF desejada:
-        logger.info(
-            f"Mantendo somente os registros do {self.uf}."
-        ) if self.verbose else None
-        df["delegacia"] = df["delegacia"].str.upper()
-        df = df[
-            df["delegacia"].str.contains("|".join([self.uf]))
-        ].copy()  # função preparada para receber múltiplas UFs
-        self.__print_df_shape(df)
-
-        # Conversão dos tipos e tratamentos iniciais:
-
-        logger.info("Criando o campo data_hora.") if self.verbose else None
-        df["data_hora"] = pd.to_datetime(df["data_inversa"] + " " + df["horario"])
-        df.drop(columns=["data_inversa", "horario"], inplace=True)
-
-        logger.info(
-            "Criando as flags de feriado e final de semana."
-        ) if self.verbose else None
-        df = self.__classify_holidays(df)
-        df["is_weekend"] = df["data_hora"].dt.weekday >= 5
+        df = (
+            df.pipe(self.__filter_uf)
+            .pipe(self.__trace_df)
+            .pipe(self.__create_datetime_column)
+            .pipe(self.__trace_df)
+            .pipe(self.__classify_holiday_and_weekend)
+            .pipe(self.__trace_df)
+        )
 
         logger.info("Padronizando os campos do tipo string.") if self.verbose else None
         df = clean_string(df, STR_COLS_TO_UPPER, "upper")
-        df = clean_string(df, STR_COLS_TO_LOWER)
+        df = clean_string(df, STR_COLS_TO_LOWER).pipe(self.__trace_df)
 
-        # Tratamento da latitude e longitude:
-
-        logger.info(
-            "Convertendo os tipos dos campos latitude e longitude."
-        ) if self.verbose else None
-        df["latitude"] = (df["latitude"].str.replace(",", ".")).astype(float)
-        df["longitude"] = (df["longitude"].str.replace(",", ".")).astype(float)
-
-        logger.info(
-            f"Eliminando registros com lat/lon com menos de {COORDS_MIN_DECIMAL_PLACES} casas decimais."
-        ) if self.verbose else None
-        df = self.__keep_min_decimal_places(df)
-        self.__print_df_shape(df)
-
-        logger.info(
-            f"Mantendo somente registros de acidentes ocorridos geograficamente no {self.uf}."
-        ) if self.verbose else None
-        df = self.__keep_geo_correct_rows(df)
-        self.__print_df_shape(df)
-
-        logger.info(f"Aplicação das correções manuais.") if self.verbose else None
-        df = self.__manual_transformations(df)
-        self.__print_df_shape(df)
-
-        logger.info(
-            f"Eliminando as coordenadas outliers por delegacia."
-        ) if self.verbose else None
-        df = self.__remove_outlier_coords(df)
-        self.__print_df_shape(df)
+        df = (
+            df.pipe(self.__convert_lat_lon)
+            .pipe(self.__trace_df)
+            .pipe(self.__keep_min_decimal_places)
+            .pipe(self.__trace_df)
+            .pipe(self.__keep_geo_correct_rows)
+            .pipe(self.__trace_df)
+            .pipe(self.__manual_transformations)
+            .pipe(self.__trace_df)
+            .pipe(self.__remove_outlier_coords)
+            .pipe(self.__trace_df)
+        )
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
         if not self.read_cache:
@@ -219,19 +184,24 @@ class Accidents:
 
         self.df_accidents = df.copy()
         logger.info(f"Fim do pré-processamento.") if self.verbose else None
-        self.__print_df_shape(df)
 
     #######################################################################
 
-    def __print_df_shape(self, df: pd.DataFrame):
-        """Método para impressão das dimensões de um data frame
+    def __trace_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para impressão das dimensões do data frame.
 
         Parameters
         ----------
         df : pd.DataFrame
-            _description_
+            Base de dados.
+
+        Returns
+        -------
+        pd.DataFrame
+            Base de dados.
         """
-        logger.info(f"df.shape: {df.shape}")
+        logger.info(f"shape: {df.shape}") if self.verbose else None
+        return df
 
     def __read_accidents(self) -> pd.DataFrame:
 
@@ -266,6 +236,72 @@ class Accidents:
                 df_out = pd.concat([df_out, df], ignore_index=True)
 
         return df_out
+
+    def __filter_uf(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para filtrar somente os registros nas delegacias da UF desejada.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Base de acidentes.
+
+        Returns
+        -------
+        pd.DataFrame
+            Base de acidentes filtrada.
+        """
+        logger.info(
+            f"Mantendo somente os registros das delegacias do {self.uf}."
+        ) if self.verbose else None
+
+        df["delegacia"] = df["delegacia"].str.upper()
+
+        df_out = df[
+            df["delegacia"].str.contains("|".join([self.uf]))
+        ].copy()  # função preparada para receber múltiplas UFs
+
+        return df_out
+
+    def __create_datetime_column(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para criação do campo 'data_hora' e remoção dos campos 'data_inversa' e 'hora'.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            _description_
+
+        Returns
+        -------
+        pd.DataFrame
+            _description_
+        """
+        logger.info("Criando o campo data_hora.") if self.verbose else None
+        df["data_hora"] = pd.to_datetime(df["data_inversa"] + " " + df["horario"])
+        df.drop(columns=["data_inversa", "horario"], inplace=True)
+
+        return df
+
+    def __convert_lat_lon(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para conversão do formato dos campos 'latitude' e 'longitude'.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Base de acidentes.
+
+        Returns
+        -------
+        pd.DataFrame
+            Base de acidentes com as conversões realizadas.
+        """
+        logger.info(
+            "Convertendo os tipos dos campos latitude e longitude."
+        ) if self.verbose else None
+
+        df["latitude"] = (df["latitude"].str.replace(",", ".")).astype(float)
+        df["longitude"] = (df["longitude"].str.replace(",", ".")).astype(float)
+
+        return df
 
     def __get_polygon(self):
         """Método para carregamento do json com as coordenadas e construção do polígono da região de interesse.
@@ -319,6 +355,10 @@ class Accidents:
         pd.DataFrame
             Data frame com os registros removidos.
         """
+        logger.info(
+            f"Eliminando registros com lat/lon com menos de {COORDS_MIN_DECIMAL_PLACES} casas decimais."
+        ) if self.verbose else None
+
         mask_lat = get_decimal_places(df["latitude"]) >= COORDS_MIN_DECIMAL_PLACES
         mask_lon = get_decimal_places(df["longitude"]) >= COORDS_MIN_DECIMAL_PLACES
         df_out = df[mask_lat & mask_lon]
@@ -338,6 +378,10 @@ class Accidents:
         pd.DataFrame
             Data frame com os registros removidos.
         """
+        logger.info(
+            f"Mantendo somente registros de acidentes ocorridos geograficamente no {self.uf}."
+        ) if self.verbose else None
+
         polygon = self.__get_polygon()
         isin_polygon = df.apply(
             lambda x: self.__within_polygon(x.longitude, x.latitude, polygon), axis=1
@@ -360,6 +404,10 @@ class Accidents:
         pd.DataFrame
             Data frame com outliers removidos.
         """
+        logger.info(
+            f"Eliminando as coordenadas outliers por delegacia."
+        ) if self.verbose else None
+
         lat_abs_zscore = (
             df.groupby(["delegacia"])["latitude"]
             .transform(lambda x: stats.zscore(x, ddof=1))
@@ -389,6 +437,8 @@ class Accidents:
         pd.DataFrame
             Data frame com as correções aplicadas.
         """
+        logger.info(f"Aplicação das correções manuais.") if self.verbose else None
+
         # Lê o json com as correções manuais:
         with open(PATH_DATA_PRF / "transformations.json") as file:
             transformations = json.load(file)
@@ -408,8 +458,8 @@ class Accidents:
 
         return df_out
 
-    def __classify_holidays(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Método para classificar uma data como feriado (True) ou não (False).
+    def __classify_holiday_and_weekend(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para classificar feriados e finais de semana.
 
         Parameters
         ----------
@@ -421,7 +471,13 @@ class Accidents:
         pd.DataFrame
             Data frame com a flag "is_holiday".
         """
+        logger.info(
+            "Criando as flags de feriado e final de semana."
+        ) if self.verbose else None
+
         br_holidays = holidays.country_holidays("BR", subdiv=self.uf)
         df["is_holiday"] = ~(df["data_hora"].apply(br_holidays.get)).isna()
+
+        df["is_weekend"] = df["data_hora"].dt.weekday >= 5
 
         return df
