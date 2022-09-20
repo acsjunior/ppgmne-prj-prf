@@ -8,7 +8,7 @@ from unidecode import unidecode
 
 from ppgmne_prj_prf.config.params import UF
 from ppgmne_prj_prf.config.paths import PATH_DATA_PRF, PATH_DATA_PRF_CACHE_DATABASE
-from ppgmne_prj_prf.utils import concatenate_dict_of_dicts
+from ppgmne_prj_prf.utils import concatenate_dict_of_dicts, trace_df
 
 
 class Stations:
@@ -55,7 +55,7 @@ class Stations:
             logger.info("Fim do pré-processamento.")
             return
 
-        df_out = self.__structure_stations().pipe(self.__trace_df)
+        df_out = self.__structure_stations().pipe(trace_df)
 
         logger.info("Incluindo os códigos das UOPs.") if self.verbose else None
         with open(PATH_DATA_PRF / "transformations.json") as file:
@@ -69,26 +69,10 @@ class Stations:
             logger.info(f"Armazenado {cache_path}.")
             df_out.to_pickle(cache_path)
 
-        self.df_stations = df_out.pipe(self.__trace_df)
+        self.df_stations = df_out.pipe(trace_df)
         logger.info("Fim do pré-processamento.") if self.verbose else None
 
     ############################################################################################################
-
-    def __trace_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Método para impressão das dimensões do data frame.
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            Base de dados.
-
-        Returns
-        -------
-        pd.DataFrame
-            Base de dados.
-        """
-        logger.info(f"shape: {df.shape}") if self.verbose else None
-        return df
 
     def __structure_stations(self) -> pd.DataFrame:
 
