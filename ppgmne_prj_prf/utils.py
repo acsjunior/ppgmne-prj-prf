@@ -159,3 +159,20 @@ def get_distance_matrix(
     dist_matrix = haversine_vector(coords_cols, coords_rows, unit="km", comb=True)
 
     return dist_matrix
+
+
+def trace_df(df: pd.DataFrame) -> pd.DataFrame:
+    """Imprime as dimensões do data frame.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Base de dados.
+
+    Returns
+    -------
+    pd.DataFrame
+        Base de dados.
+    """
+    logger.info(f"shape: {df.shape}")
+    return df

@@ -20,7 +20,12 @@ from ppgmne_prj_prf.config.paths import (
     PATH_DATA_PRF,
     PATH_DATA_PRF_CACHE_DATABASE,
 )
-from ppgmne_prj_prf.utils import clean_string, csv_zip_to_df, get_decimal_places
+from ppgmne_prj_prf.utils import (
+    clean_string,
+    csv_zip_to_df,
+    get_decimal_places,
+    trace_df,
+)
 
 
 class Accidents:
@@ -117,20 +122,20 @@ class Accidents:
             return
 
         # Leitura dos registros dos acidentes:
-        df = self.__read_accidents().pipe(self.__trace_df)
+        df = self.__read_accidents().pipe(trace_df)
 
         # Filtra a UF desejada:
         logger.info(
             f"Selecionando somente os dados do {self.uf}."
         ) if self.verbose else None
-        df = df[df["uf"].str.upper() == self.uf].copy().pipe(self.__trace_df)
+        df = df[df["uf"].str.upper() == self.uf].copy().pipe(trace_df)
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
         if not self.read_cache:
             logger.info(f"Armazenado {cache_path}.")
             df.to_pickle(cache_path)
 
-        self.df_accidents = df.copy().pipe(self.__trace_df)
+        self.df_accidents = df.copy().pipe(trace_df)
         logger.info(f"Fim da extração dos dados.")
 
     def transform(self):
@@ -149,32 +154,32 @@ class Accidents:
         df = self.df_accidents
 
         logger.info("Removendo registros incompletos.") if self.verbose else None
-        df = df.dropna().pipe(self.__trace_df).copy()
+        df = df.dropna().pipe(trace_df).copy()
 
         df = (
             df.pipe(self.__filter_uf)
-            .pipe(self.__trace_df)
+            .pipe(trace_df)
             .pipe(self.__create_datetime_column)
-            .pipe(self.__trace_df)
+            .pipe(trace_df)
             .pipe(self.__classify_holiday_and_weekend)
-            .pipe(self.__trace_df)
+            .pipe(trace_df)
         )
 
         logger.info("Padronizando os campos do tipo string.") if self.verbose else None
         df = clean_string(df, STR_COLS_TO_UPPER, "upper")
-        df = clean_string(df, STR_COLS_TO_LOWER).pipe(self.__trace_df)
+        df = clean_string(df, STR_COLS_TO_LOWER).pipe(trace_df)
 
         df = (
             df.pipe(self.__convert_lat_lon)
-            .pipe(self.__trace_df)
+            .pipe(trace_df)
             .pipe(self.__keep_min_decimal_places)
-            .pipe(self.__trace_df)
+            .pipe(trace_df)
             .pipe(self.__keep_geo_correct_rows)
-            .pipe(self.__trace_df)
+            .pipe(trace_df)
             .pipe(self.__manual_transformations)
-            .pipe(self.__trace_df)
+            .pipe(trace_df)
             .pipe(self.__remove_outlier_coords)
-            .pipe(self.__trace_df)
+            .pipe(trace_df)
         )
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
@@ -186,22 +191,6 @@ class Accidents:
         logger.info(f"Fim do pré-processamento.") if self.verbose else None
 
     #######################################################################
-
-    def __trace_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Método para impressão das dimensões do data frame.
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            Base de dados.
-
-        Returns
-        -------
-        pd.DataFrame
-            Base de dados.
-        """
-        logger.info(f"shape: {df.shape}") if self.verbose else None
-        return df
 
     def __read_accidents(self) -> pd.DataFrame:
 

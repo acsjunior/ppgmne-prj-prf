@@ -14,7 +14,7 @@ from ppgmne_prj_prf.config.params import (
     N_CLUSTERS,
 )
 from ppgmne_prj_prf.config.paths import PATH_DATA_PRF_CACHE_MODEL
-from ppgmne_prj_prf.utils import get_distance_matrix
+from ppgmne_prj_prf.utils import get_distance_matrix, trace_df
 
 
 class Points:
@@ -43,7 +43,7 @@ class Points:
         """Método para pré-processamento dos pontos de acidentes"""
 
         logger.info("Início do pré processamento.") if self.verbose else None
-        df = self.df_accidents.copy().pipe(self.__trace_df)
+        df = self.df_accidents.copy().pipe(trace_df)
 
         cache_path = PATH_DATA_PRF_CACHE_MODEL / f"{self.name}.pkl"
         if self.read_cache:
@@ -54,19 +54,19 @@ class Points:
 
         df = (
             df.pipe(self.__identify_point)
-            .pipe(self.__trace_df)
+            .pipe(trace_df)
             .pipe(self.__get_point_stats)
-            .pipe(self.__trace_df)
+            .pipe(trace_df)
             .pipe(self.__get_point_clusters)
-            .pipe(self.__trace_df)
+            .pipe(trace_df)
             .pipe(self.__aggregate_points)
-            .pipe(self.__trace_df)
+            .pipe(trace_df)
         )
 
         logger.info(f"Incluindo o DMAX na base.") if self.verbose else None
         df["dist_max"] = df["cluster"].map(CLUSTER_DMAX)
 
-        df = self.__rename_corresp_points(df)
+        df = self.__rename_corresp_points(df).pipe(trace_df)
 
         logger.info(
             f"Criando as flags 'is_uop' e 'is_only_uop'."
@@ -75,33 +75,17 @@ class Points:
         df["is_only_uop"] = False
         df.drop(columns="uop_name", inplace=True)
 
-        df = self.__add_only_uops(df)
+        df = self.__add_only_uops(df).pipe(trace_df)
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
         if not self.read_cache:
             logger.info(f"Armazenado {cache_path}.")
             df.to_pickle(cache_path)
 
-        self.df_points = df.copy()
+        self.df_points = df.copy().pipe(trace_df)
         logger.info(f"Fim do pré-processamento.") if self.verbose else None
 
     #################################################################
-
-    def __trace_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Método para impressão das dimensões do data frame.
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            Base de dados.
-
-        Returns
-        -------
-        pd.DataFrame
-            Base de dados.
-        """
-        logger.info(f"shape: {df.shape}") if self.verbose else None
-        return df
 
     def __identify_point(self, df: pd.DataFrame) -> pd.DataFrame:
         """Método para criar identificação única e padronizar o nome do município dos pontos.
