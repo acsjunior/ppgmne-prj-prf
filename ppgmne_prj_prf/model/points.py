@@ -43,7 +43,7 @@ class Points:
         """Método para pré-processamento dos pontos de acidentes"""
 
         logger.info("Início do pré processamento.") if self.verbose else None
-        df = self.df_accidents.copy()
+        df = self.df_accidents.copy().pipe(self.__trace_df)
 
         cache_path = PATH_DATA_PRF_CACHE_MODEL / f"{self.name}.pkl"
         if self.read_cache:
@@ -52,45 +52,21 @@ class Points:
             logger.info("Fim do pré-processamento.")
             return
 
-        logger.info(
-            f"Criando as coordendas dos pontos (arredondamento)."
-        ) if self.verbose else None
-        df["point_latitude"] = df["latitude"].round(COORDS_PRECISION)
-        df["point_longitude"] = df["longitude"].round(COORDS_PRECISION)
-
-        logger.info(f"Criando a identificação dos pontos.") if self.verbose else None
-        df = self.__identify_point(df)
-        self.__print_df_shape(df)
-
-        logger.info(f"Calculando as estatísticas dos pontos.") if self.verbose else None
-        df = self.__get_point_stats(df)
-        self.__print_df_shape(df)
-
-        logger.info(f"Identificando o cluster de cada ponto.") if self.verbose else None
-        df = self.__get_point_clusters(df)
-        self.__print_df_shape(df)
-
-        logger.info(f"Agregando os dados por ponto.") if self.verbose else None
-        df = self.__aggregate_points(df)
-        self.__print_df_shape(df)
+        df = (
+            df.pipe(self.__identify_point)
+            .pipe(self.__trace_df)
+            .pipe(self.__get_point_stats)
+            .pipe(self.__trace_df)
+            .pipe(self.__get_point_clusters)
+            .pipe(self.__trace_df)
+            .pipe(self.__aggregate_points)
+            .pipe(self.__trace_df)
+        )
 
         logger.info(f"Incluindo o DMAX na base.") if self.verbose else None
         df["dist_max"] = df["cluster"].map(CLUSTER_DMAX)
 
-        logger.info(
-            f"Encontrando o ponto correspondente para cada UOP."
-        ) if self.verbose else None
-        df_corresp = self.__find_corresp_point(df)
-
-        logger.info(
-            f"Renomeando os pontos correspondentes encontrados."
-        ) if self.verbose else None
-        is_corresp_point = ~df_corresp["point_name"].isna()
-        df_to_rename = df_corresp[is_corresp_point][["uop", "point_name"]].rename(
-            columns={"uop": "uop_name", "point_name": "name"}
-        )
-        df = df.merge(df_to_rename, how="left", on="name")
-        df["name"] = df["uop_name"].combine_first(df["name"])
+        df = self.__rename_corresp_points(df)
 
         logger.info(
             f"Criando as flags 'is_uop' e 'is_only_uop'."
@@ -99,12 +75,7 @@ class Points:
         df["is_only_uop"] = False
         df.drop(columns="uop_name", inplace=True)
 
-        logger.info(
-            f"Adicionando as UOPs sem registro de acidentes."
-        ) if self.verbose else None
-        df_to_add = self.__get_only_uops(df, df_corresp)
-        df = pd.concat([df, df_to_add], ignore_index=True)
-        self.__print_df_shape(df)
+        df = self.__add_only_uops(df)
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
         if not self.read_cache:
@@ -113,18 +84,24 @@ class Points:
 
         self.df_points = df.copy()
         logger.info(f"Fim do pré-processamento.") if self.verbose else None
-        self.__print_df_shape(df)
 
     #################################################################
-    def __print_df_shape(self, df: pd.DataFrame):
-        """Método para impressão das dimensões de um data frame
+
+    def __trace_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para impressão das dimensões do data frame.
 
         Parameters
         ----------
         df : pd.DataFrame
-            _description_
+            Base de dados.
+
+        Returns
+        -------
+        pd.DataFrame
+            Base de dados.
         """
-        logger.info(f"df.shape: {df.shape}")
+        logger.info(f"shape: {df.shape}") if self.verbose else None
+        return df
 
     def __identify_point(self, df: pd.DataFrame) -> pd.DataFrame:
         """Método para criar identificação única e padronizar o nome do município dos pontos.
@@ -139,6 +116,11 @@ class Points:
         pd.DataFrame
             Data frame com os campos "point_municipality" e "point_name".
         """
+
+        logger.info(f"Criando a identificação dos pontos.") if self.verbose else None
+
+        df["point_latitude"] = df["latitude"].round(COORDS_PRECISION)
+        df["point_longitude"] = df["longitude"].round(COORDS_PRECISION)
 
         # Identifica o município do ponto por ordem de frequência de acidentes:
         df_mun = (
@@ -194,6 +176,8 @@ class Points:
         pd.DataFrame
             Data frame com as estatísticas calculadas.
         """
+        logger.info(f"Calculando as estatísticas dos pontos.") if self.verbose else None
+
         # Calcula as estatísticas:
         df_stats = (
             df.groupby(["point_name"])
@@ -227,6 +211,8 @@ class Points:
         pd.DataFrame
             Data frame com o cluster de cada ponto.
         """
+
+        logger.info(f"Identificando o cluster de cada ponto.") if self.verbose else None
 
         # Se a leitura de cache estiver ativa, carrega a base de clusters da cache:
         clusters_path = PATH_DATA_PRF_CACHE_MODEL / f"hc_clusters.pkl"
@@ -313,6 +299,9 @@ class Points:
         pd.DataFrame
             Data frame agregado por ponto.
         """
+
+        logger.info(f"Agregando os dados por ponto.") if self.verbose else None
+
         suffix = "point_"
         cols = [col for col in df.columns if col[: len(suffix)] == suffix]
 
@@ -334,6 +323,11 @@ class Points:
         pd.DataFrame
             Base de UOPs com os pontos correspondentes encontrados.
         """
+
+        logger.info(
+            f"Encontrando o ponto correspondente para cada UOP."
+        ) if self.verbose else None
+
         # Calcula a matriz de distâncias entre as UOPs e os pontos:
         df_uops = self.df_uops
         dist_matrix = get_distance_matrix(
@@ -359,6 +353,22 @@ class Points:
         df_uops["point_name"] = names
 
         return df_uops
+
+    def __rename_corresp_points(self, df: pd.DataFrame) -> pd.DataFrame:
+
+        logger.info(f"Renomeando os pontos correspondentes.") if self.verbose else None
+
+        df_corresp = self.__find_corresp_point(df)
+        is_corresp_point = ~df_corresp["point_name"].isna()
+
+        df_to_rename = df_corresp[is_corresp_point][["uop", "point_name"]].rename(
+            columns={"uop": "uop_name", "point_name": "name"}
+        )
+
+        df = df.merge(df_to_rename, how="left", on="name")
+        df["name"] = df["uop_name"].combine_first(df["name"])
+
+        return df
 
     def __get_only_uops(self, df: pd.DataFrame, df_uops: pd.DataFrame) -> pd.DataFrame:
         """Método para preparar a base de UOPs (only) para adicionar na base de pontos.
@@ -387,3 +397,15 @@ class Points:
                     df_only_uops[col] = True
 
         return df_only_uops
+
+    def __add_only_uops(self, df: pd.DataFrame) -> pd.DataFrame:
+
+        logger.info(
+            f"Adicionando as UOPs sem registro de acidentes."
+        ) if self.verbose else None
+
+        df_corresp = self.__find_corresp_point(df)
+        df_to_add = self.__get_only_uops(df, df_corresp)
+        df = pd.concat([df, df_to_add], ignore_index=True)
+
+        return df
