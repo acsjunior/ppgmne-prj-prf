@@ -141,4 +141,4 @@ cython_debug/
 .DS_Store
 
 # Cache
-data/prf/cache/*
+data/cache/*

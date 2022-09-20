@@ -13,7 +13,7 @@ from ppgmne_prj_prf.config.params import (
     MIN_DIST_TOLERANCE,
     N_CLUSTERS,
 )
-from ppgmne_prj_prf.config.paths import PATH_DATA_PRF_CACHE_MODEL
+from ppgmne_prj_prf.config.paths import PATH_DATA_CACHE_MODEL
 from ppgmne_prj_prf.utils import get_distance_matrix, trace_df
 
 
@@ -45,7 +45,7 @@ class Points:
         logger.info("Início do pré processamento.") if self.verbose else None
         df = self.df_accidents.copy().pipe(trace_df)
 
-        cache_path = PATH_DATA_PRF_CACHE_MODEL / f"{self.name}.pkl"
+        cache_path = PATH_DATA_CACHE_MODEL / f"{self.name}.pkl"
         if self.read_cache:
             logger.info("Modo de leitura da cache ativo.")
             self.df_points = pd.read_pickle(cache_path)
@@ -199,7 +199,7 @@ class Points:
         logger.info(f"Identificando o cluster de cada ponto.") if self.verbose else None
 
         # Se a leitura de cache estiver ativa, carrega a base de clusters da cache:
-        clusters_path = PATH_DATA_PRF_CACHE_MODEL / f"hc_clusters.pkl"
+        clusters_path = PATH_DATA_CACHE_MODEL / f"hc_clusters.pkl"
         if self.cluster_cache:
             logger.info("Lendo a cache da base de clusters.")
             df_point = pd.read_pickle(clusters_path)
@@ -224,7 +224,7 @@ class Points:
         )
 
         # Armazena o pickle do modelo caso o modo de leitura da cache não esteja ativo:
-        model_path = PATH_DATA_PRF_CACHE_MODEL / "hc_model.pkl"
+        model_path = PATH_DATA_CACHE_MODEL / "hc_model.pkl"
         if not self.cluster_cache:
             logger.info(f"Armazenado o modelo de clustering em {model_path}.")
             pickle.dump(hc, open(model_path, "wb"))
@@ -245,7 +245,7 @@ class Points:
         df_stats = df_stats.sort_values(by="mean").reset_index(drop=True)
 
         # Armazena as estatísticas caso o modo de leitura da cache não esteja ativo:
-        stats_path = PATH_DATA_PRF_CACHE_MODEL / f"hc_stats.pkl"
+        stats_path = PATH_DATA_CACHE_MODEL / f"hc_stats.pkl"
         if not self.cluster_cache:
             logger.info(f"Armazenado as estatísticas de clustering em {stats_path}.")
             df_stats.to_pickle(stats_path)
