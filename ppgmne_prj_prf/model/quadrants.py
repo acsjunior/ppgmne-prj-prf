@@ -17,7 +17,7 @@ from ppgmne_prj_prf.config.paths import PATH_DATA_CACHE_MODEL
 from ppgmne_prj_prf.utils import get_distance_matrix, trace_df
 
 
-class Points:
+class Quadrants:
     def __init__(
         self,
         df_accidents: pd.DataFrame,
@@ -26,9 +26,9 @@ class Points:
         read_cache: bool = False,
         cluster_cache: bool = False,
     ):
-        self.name = "points"
+        self.name = "quadrants"
         self.df_accidents = df_accidents
-        self.df_points = pd.DataFrame()
+        self.df_quadrants = pd.DataFrame()
         self.verbose = verbose
         self.read_cache = read_cache
         self.cluster_cache = cluster_cache
@@ -40,7 +40,7 @@ class Points:
         self.df_uops = df_uops
 
     def transform(self):
-        """Método para pré-processamento dos pontos de acidentes"""
+        """Método para pré-processamento dos quadrantes (regiões com volume de acidentes)"""
 
         logger.info("Início do pré processamento.") if self.verbose else None
         df = self.df_accidents.copy().pipe(trace_df)
@@ -48,25 +48,25 @@ class Points:
         cache_path = PATH_DATA_CACHE_MODEL / f"{self.name}.pkl"
         if self.read_cache:
             logger.info("Modo de leitura da cache ativo.")
-            self.df_points = pd.read_pickle(cache_path)
+            self.df_quadrants = pd.read_pickle(cache_path)
             logger.info("Fim do pré-processamento.")
             return
 
         df = (
-            df.pipe(self.__identify_point)
+            df.pipe(self.__identify_quadrant)
             .pipe(trace_df)
-            .pipe(self.__get_point_stats)
+            .pipe(self.__get_quadrant_stats)
             .pipe(trace_df)
-            .pipe(self.__get_point_clusters)
+            .pipe(self.__get_quadrant_clusters)
             .pipe(trace_df)
-            .pipe(self.__aggregate_points)
+            .pipe(self.__aggregate_quadrants)
             .pipe(trace_df)
         )
 
         logger.info(f"Incluindo o DMAX na base.") if self.verbose else None
         df["dist_max"] = df["cluster"].map(CLUSTER_DMAX)
 
-        df = self.__rename_corresp_points(df).pipe(trace_df)
+        df = self.__rename_corresp_quadrants(df).pipe(trace_df)
 
         logger.info(
             f"Criando as flags 'is_uop' e 'is_only_uop'."
@@ -82,13 +82,13 @@ class Points:
             logger.info(f"Armazenado {cache_path}.")
             df.to_pickle(cache_path)
 
-        self.df_points = df.copy().pipe(trace_df)
+        self.df_quadrants = df.copy().pipe(trace_df)
         logger.info(f"Fim do pré-processamento.") if self.verbose else None
 
     #################################################################
 
-    def __identify_point(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Método para criar identificação única e padronizar o nome do município dos pontos.
+    def __identify_quadrant(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para criar identificação única e padronizar o nome do município dos quadrantes.
 
         Parameters
         ----------
@@ -98,57 +98,62 @@ class Points:
         Returns
         -------
         pd.DataFrame
-            Data frame com os campos "point_municipality" e "point_name".
+            Data frame com os campos "quadrant_municipality" e "quadrant_name".
         """
 
-        logger.info(f"Criando a identificação dos pontos.") if self.verbose else None
+        logger.info(
+            f"Criando a identificação dos quadrantes."
+        ) if self.verbose else None
 
-        df["point_latitude"] = df["latitude"].round(COORDS_PRECISION)
-        df["point_longitude"] = df["longitude"].round(COORDS_PRECISION)
+        df["quadrant_latitude"] = df["latitude"].round(COORDS_PRECISION)
+        df["quadrant_longitude"] = df["longitude"].round(COORDS_PRECISION)
 
-        # Identifica o município do ponto por ordem de frequência de acidentes:
+        # Identifica o município do quadrante por ordem de frequência de acidentes:
         df_mun = (
-            df.groupby(["point_latitude", "point_longitude", "municipio"])["data_hora"]
+            df.groupby(["quadrant_latitude", "quadrant_longitude", "municipio"])[
+                "data_hora"
+            ]
             .count()
             .reset_index(name="n_accidents")
         )
-        df_mun["seq"] = df_mun.groupby(["point_latitude", "point_longitude"])[
+        df_mun["seq"] = df_mun.groupby(["quadrant_latitude", "quadrant_longitude"])[
             "n_accidents"
         ].rank("first", ascending=False)
         df_mun = df_mun[df_mun["seq"] == 1].copy()
-        df_mun.rename(columns={"municipio": "point_municipality"}, inplace=True)
+        df_mun.rename(columns={"municipio": "quadrant_municipality"}, inplace=True)
 
-        # Cria um identificador único para o ponto:
+        # Cria um identificador único para o quadrante:
         zfill_param = len(
             str(
-                df_mun.groupby(["point_municipality"])["point_latitude"]
+                df_mun.groupby(["quadrant_municipality"])["quadrant_latitude"]
                 .count()
                 .reset_index(name="n")["n"]
                 .max()
             )
         )
         df_mun.sort_values(
-            by=["point_municipality", "point_latitude", "point_longitude"], inplace=True
+            by=["quadrant_municipality", "quadrant_latitude", "quadrant_longitude"],
+            inplace=True,
         )
         df_mun["x"] = 1
         df_mun["suf"] = (
-            (df_mun.groupby("point_municipality")["x"].rank("first"))
+            (df_mun.groupby("quadrant_municipality")["x"].rank("first"))
             .astype(int)
             .astype(str)
             .str.zfill(zfill_param)
         )
-        df_mun["point_name"] = df_mun["point_municipality"] + " " + df_mun["suf"]
+        df_mun["quadrant_name"] = df_mun["quadrant_municipality"] + " " + df_mun["suf"]
 
         # Remove os campos desnecessários:
         df_mun.drop(columns=["n_accidents", "seq", "x", "suf"], inplace=True)
 
         # Inclui os campos no df final:
-        df_out = df.merge(df_mun, on=["point_latitude", "point_longitude"])
+        df_out = df.merge(df_mun, on=["quadrant_latitude", "quadrant_longitude"])
 
         return df_out
 
-    def __get_point_stats(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Método para calcular as estatísticas por ponto.
+    def __get_quadrant_stats(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para calcular as estatísticas por quadrante.
 
         Parameters
         ----------
@@ -160,28 +165,30 @@ class Points:
         pd.DataFrame
             Data frame com as estatísticas calculadas.
         """
-        logger.info(f"Calculando as estatísticas dos pontos.") if self.verbose else None
+        logger.info(
+            f"Calculando as estatísticas dos quadrantes."
+        ) if self.verbose else None
 
         # Calcula as estatísticas:
         df_stats = (
-            df.groupby(["point_name"])
+            df.groupby(["quadrant_name"])
             .agg(
-                point_n_accidents=("data_hora", "count"),
-                point_n_acc_holiday=("is_holiday", sum),
-                point_n_acc_weekend=("is_weekend", sum),
-                point_n_injuried=("feridos_graves", sum),
-                point_n_dead=("mortos", sum),
+                quadrant_n_accidents=("data_hora", "count"),
+                quadrant_n_acc_holiday=("is_holiday", sum),
+                quadrant_n_acc_weekend=("is_weekend", sum),
+                quadrant_n_injuried=("feridos_graves", sum),
+                quadrant_n_dead=("mortos", sum),
             )
             .reset_index()
         )
 
         # Inclui os dados no df final:
-        df_out = df.merge(df_stats, on="point_name")
+        df_out = df.merge(df_stats, on="quadrant_name")
 
         return df_out
 
-    def __get_point_clusters(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Método para clusterização dos pontos de acidentes.
+    def __get_quadrant_clusters(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para clusterização dos quadrantes.
 
         Aplica o método hierárquico de Ward.
 
@@ -193,30 +200,32 @@ class Points:
         Returns
         -------
         pd.DataFrame
-            Data frame com o cluster de cada ponto.
+            Data frame com o cluster de cada quadrante.
         """
 
-        logger.info(f"Identificando o cluster de cada ponto.") if self.verbose else None
+        logger.info(
+            f"Identificando o cluster de cada quadrante."
+        ) if self.verbose else None
 
         # Se a leitura de cache estiver ativa, carrega a base de clusters da cache:
         clusters_path = PATH_DATA_CACHE_MODEL / f"hc_clusters.pkl"
         if self.cluster_cache:
             logger.info("Lendo a cache da base de clusters.")
-            df_point = pd.read_pickle(clusters_path)
+            df_quadrant = pd.read_pickle(clusters_path)
 
             # Inclui os clusters na base final:
             df_out = df.merge(
-                df_point[["point_name", "point_cluster"]], on="point_name"
+                df_quadrant[["quadrant_name", "quadrant_cluster"]], on="quadrant_name"
             )
             return df_out
 
-        df_point = (
-            df[["point_name"] + CLUSTERING_FEATS]
+        df_quadrant = (
+            df[["quadrant_name"] + CLUSTERING_FEATS]
             .drop_duplicates()
             .reset_index(drop=True)
         )
 
-        df_cluster = df_point[CLUSTERING_FEATS].copy()
+        df_cluster = df_quadrant[CLUSTERING_FEATS].copy()
         df_cluster.iloc[:, :] = StandardScaler().fit_transform(df_cluster)
 
         hc = AgglomerativeClustering(
@@ -229,13 +238,15 @@ class Points:
             logger.info(f"Armazenado o modelo de clustering em {model_path}.")
             pickle.dump(hc, open(model_path, "wb"))
 
-        df_point["cluster"] = (hc.fit_predict(df_cluster)).astype(str)
+        df_quadrant["cluster"] = (hc.fit_predict(df_cluster)).astype(str)
 
         # Calcula as estatísticas por cluster:
         df_stats = None
-        for cluster in df_point["cluster"].value_counts().index:
+        for cluster in df_quadrant["cluster"].value_counts().index:
             df_stats_i = pd.DataFrame(
-                df_point[df_point["cluster"] == cluster]["point_n_accidents"].describe()
+                df_quadrant[df_quadrant["cluster"] == cluster][
+                    "quadrant_n_accidents"
+                ].describe()
             ).T
             df_stats_i["cluster"] = cluster
             if df_stats is None:
@@ -252,26 +263,30 @@ class Points:
 
         # Renomeia os clusters:
         clusters = np.arange(1, N_CLUSTERS + 1, 1)
-        df_stats["point_cluster"] = clusters
-        df_stats["point_cluster"] = pd.Categorical(
-            df_stats["point_cluster"], categories=clusters, ordered=True
+        df_stats["quadrant_cluster"] = clusters
+        df_stats["quadrant_cluster"] = pd.Categorical(
+            df_stats["quadrant_cluster"], categories=clusters, ordered=True
         )
 
-        # Inclui os clusters renomeados na base de pontos:
-        df_point = df_point.merge(df_stats[["cluster", "point_cluster"]], on="cluster")
+        # Inclui os clusters renomeados na base de quadrantes:
+        df_quadrant = df_quadrant.merge(
+            df_stats[["cluster", "quadrant_cluster"]], on="cluster"
+        )
 
         # Armazena a base de clusters caso o modo de leitura da cache não esteja ativo:
         if not self.cluster_cache:
             logger.info(f"Armazenado a base de clusters em {clusters_path}.")
-            df_point[["point_name", "point_cluster"]].to_pickle(clusters_path)
+            df_quadrant[["quadrant_name", "quadrant_cluster"]].to_pickle(clusters_path)
 
         # Inclui os clusters na base final:
-        df_out = df.merge(df_point[["point_name", "point_cluster"]], on="point_name")
+        df_out = df.merge(
+            df_quadrant[["quadrant_name", "quadrant_cluster"]], on="quadrant_name"
+        )
 
         return df_out
 
-    def __aggregate_points(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Método para criar a base de pontos agregados.
+    def __aggregate_quadrants(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para criar a base de quadrantes agregados.
 
         Parameters
         ----------
@@ -281,12 +296,12 @@ class Points:
         Returns
         -------
         pd.DataFrame
-            Data frame agregado por ponto.
+            Data frame agregado por quadrante.
         """
 
-        logger.info(f"Agregando os dados por ponto.") if self.verbose else None
+        logger.info(f"Agregando os dados por quadrante.") if self.verbose else None
 
-        suffix = "point_"
+        suffix = "quadrant_"
         cols = [col for col in df.columns if col[: len(suffix)] == suffix]
 
         df_out = df[cols].drop_duplicates().reset_index(drop=True)
@@ -294,25 +309,25 @@ class Points:
 
         return df_out
 
-    def __find_corresp_point(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Método para encontrar o ponto correspondente, na base de pontos, para cada UOP.
+    def __find_corresp_quadrant(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Método para encontrar o quadrante correspondente para cada UOP.
 
         Parameters
         ----------
         df : pd.DataFrame
-            Base de pontos.
+            Base de quadrantes.
 
         Returns
         -------
         pd.DataFrame
-            Base de UOPs com os pontos correspondentes encontrados.
+            Base de UOPs com os quadrantes correspondentes encontrados.
         """
 
         logger.info(
-            f"Encontrando o ponto correspondente para cada UOP."
+            f"Encontrando o quadrante correspondente para cada UOP."
         ) if self.verbose else None
 
-        # Calcula a matriz de distâncias entre as UOPs e os pontos:
+        # Calcula a matriz de distâncias entre as UOPs e os quadrantes:
         df_uops = self.df_uops
         dist_matrix = get_distance_matrix(
             df["latitude"], df["longitude"], df_uops["latitude"], df_uops["longitude"]
@@ -323,7 +338,7 @@ class Points:
         df_dist.index = df["name"]
         df_dist.columns = df_uops["uop"]
 
-        # Encontra o ponto correspondente para cada UOP:
+        # Encontra o quadrante correspondente para cada UOP:
         names = []
         for col in df_uops["uop"]:
             df_sort = df_dist[col].sort_values().head(1).copy()
@@ -334,19 +349,21 @@ class Points:
                 names.append(idx)
             else:
                 names.append(np.nan)
-        df_uops["point_name"] = names
+        df_uops["quadrant_name"] = names
 
         return df_uops
 
-    def __rename_corresp_points(self, df: pd.DataFrame) -> pd.DataFrame:
+    def __rename_corresp_quadrants(self, df: pd.DataFrame) -> pd.DataFrame:
 
-        logger.info(f"Renomeando os pontos correspondentes.") if self.verbose else None
+        logger.info(
+            f"Renomeando os quadrantes correspondentes."
+        ) if self.verbose else None
 
-        df_corresp = self.__find_corresp_point(df)
-        is_corresp_point = ~df_corresp["point_name"].isna()
+        df_corresp = self.__find_corresp_quadrant(df)
+        is_corresp_quadrant = ~df_corresp["quadrant_name"].isna()
 
-        df_to_rename = df_corresp[is_corresp_point][["uop", "point_name"]].rename(
-            columns={"uop": "uop_name", "point_name": "name"}
+        df_to_rename = df_corresp[is_corresp_quadrant][["uop", "quadrant_name"]].rename(
+            columns={"uop": "uop_name", "quadrant_name": "name"}
         )
 
         df = df.merge(df_to_rename, how="left", on="name")
@@ -355,22 +372,22 @@ class Points:
         return df
 
     def __get_only_uops(self, df: pd.DataFrame, df_uops: pd.DataFrame) -> pd.DataFrame:
-        """Método para preparar a base de UOPs (only) para adicionar na base de pontos.
+        """Método para preparar a base de UOPs (only) para adicionar na base de quadrantes.
 
         Parameters
         ----------
         df : pd.DataFrame
-            Base de pontos.
+            Base de quadrantes.
         df_uops : pd.DataFrame
             Base de UOPs.
 
         Returns
         -------
         pd.DataFrame
-            Base de UOPs (only) para adicionar na basde pontos.
+            Base de UOPs (only) para adicionar na base de quadrantes.
         """
         cols = ["latitude", "longitude", "municipality", "uop"]
-        df_only_uops = df_uops[df_uops["point_name"].isna()][cols].rename(
+        df_only_uops = df_uops[df_uops["quadrant_name"].isna()][cols].rename(
             columns={"uop": "name"}
         )
         if df_only_uops.shape[0] > 0:
@@ -388,7 +405,7 @@ class Points:
             f"Adicionando as UOPs sem registro de acidentes."
         ) if self.verbose else None
 
-        df_corresp = self.__find_corresp_point(df)
+        df_corresp = self.__find_corresp_quadrant(df)
         df_to_add = self.__get_only_uops(df, df_corresp)
         df = pd.concat([df, df_to_add], ignore_index=True)
 
