@@ -29,17 +29,11 @@ from ppgmne_prj_prf.utils import (
 
 
 class Accidents:
-    def __init__(self, verbose: bool = True, read_cache: bool = False) -> None:
-        self.name_raw = "accidents_raw"
+    def __init__(self, verbose: bool = True) -> None:
         self.name = "accidents"
         self.uf = UF
-        self.df_accidents = pd.DataFrame()
+        self.df = pd.DataFrame()
         self.verbose = verbose
-        self.read_cache = read_cache
-
-        logger.info("Lendo as urls dos acidentes.") if self.verbose else None
-        with open(PATH_DATA_PRF / "accidents.json") as file:
-            self.urls = json.load(file)
 
         self.key_in = "id"
 
@@ -106,18 +100,24 @@ class Accidents:
             "uop": Column(str),
         }
 
-    def extract(self):
-        """Método para extração dos do histórico de acidentes"""
+    def extract(self, read_cache: bool = False):
+        """Método para extração dos do histórico de acidentes
+
+        Parameters
+        ----------
+        read_cache : bool, optional
+            Ativa o modo de leitura de cache, by default False
+        """
 
         logger.info(
             "Início da leitura dos registros de acidentes."
         ) if self.verbose else None
 
-        cache_path = PATH_DATA_CACHE_MODEL / f"{self.name_raw}.pkl"
-
-        if self.read_cache:
+        # Carrega a cache caso o modo de leitura da cache esteja ativo:
+        cache_path = PATH_DATA_CACHE_MODEL / f"{self.name}_raw.pkl"
+        if read_cache:
             logger.info("Modo de leitura da cache ativo.")
-            self.df_accidents = pd.read_pickle(cache_path)
+            self.df = pd.read_pickle(cache_path)
             logger.info("Fim da extração dos dados.")
             return
 
@@ -131,27 +131,33 @@ class Accidents:
         df = df[df["uf"].str.upper() == self.uf].copy().pipe(trace_df)
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
-        if not self.read_cache:
+        if not read_cache:
             logger.info(f"Armazenado {cache_path}.")
             df.to_pickle(cache_path)
 
-        self.df_accidents = df.copy().pipe(trace_df)
+        self.df = df.copy().pipe(trace_df)
         logger.info(f"Fim da extração dos dados.")
 
-    def transform(self):
-        """Método para pré-processamento do histórico de acidentes"""
+    def transform(self, read_cache: bool = False):
+        """Método para pré-processamento do histórico de acidentes
+
+        Parameters
+        ----------
+        read_cache : bool, optional
+            Ativa o modo de leitura de cache, by default False
+        """
 
         logger.info("Início do pré processamento.") if self.verbose else None
 
         # Carrega a cache caso o modo de leitura da cache esteja ativo:
         cache_path = PATH_DATA_CACHE_MODEL / f"{self.name}.pkl"
-        if self.read_cache:
+        if read_cache:
             logger.info("Modo de leitura da cache ativo.")
-            self.df_accidents = pd.read_pickle(cache_path)
+            self.df = pd.read_pickle(cache_path)
             logger.info("Fim do pré-processamento.")
             return
 
-        df = self.df_accidents
+        df = self.df
 
         logger.info("Removendo registros incompletos.") if self.verbose else None
         df = df.dropna().pipe(trace_df).copy()
@@ -183,22 +189,31 @@ class Accidents:
         )
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
-        if not self.read_cache:
-            logger.info(f"Armazenado {cache_path}.")
-            df.to_pickle(cache_path)
+        logger.info(f"Armazenado {cache_path}.")
+        df.to_pickle(cache_path)
 
-        self.df_accidents = df.copy()
+        self.df = df.copy()
         logger.info(f"Fim do pré-processamento.") if self.verbose else None
 
     #######################################################################
 
     def __read_accidents(self) -> pd.DataFrame:
+        """Método para carregar o histórico de acidetnes.
+
+        Returns
+        -------
+        pd.DataFrame
+            Histórico de acidentes.
+        """
+        logger.info("Lendo as urls dos acidentes.") if self.verbose else None
+        with open(PATH_DATA_PRF / "accidents.json") as file:
+            urls = json.load(file)
 
         df_out = pd.DataFrame()
-        for year in self.urls.keys():
+        for year in urls.keys():
 
             # Lê os dados dos acidentes:
-            url = self.urls[year]
+            url = urls[year]
             file_name = f"datatran{year}.csv"
             df = csv_zip_to_df(url, file_name)
             df["ano"] = year

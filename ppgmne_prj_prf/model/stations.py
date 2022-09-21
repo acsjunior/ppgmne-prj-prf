@@ -7,18 +7,16 @@ from loguru import logger
 from unidecode import unidecode
 
 from ppgmne_prj_prf.config.params import UF
-from ppgmne_prj_prf.config.paths import PATH_DATA_CACHE_MODEL, PATH_DATA_PRF
+from ppgmne_prj_prf.config.paths import PATH_DATA_PRF
 from ppgmne_prj_prf.utils import concatenate_dict_of_dicts, trace_df
 
 
 class Stations:
-    def __init__(self, verbose: bool = True, read_cache: bool = False):
-        self.name_raw = "stations_raw"
+    def __init__(self, verbose: bool = True):
         self.name = "stations"
         self.uf = UF
-        self.df_stations = pd.DataFrame()
+        self.df = pd.DataFrame()
         self.verbose = verbose
-        self.read_cache = read_cache
 
     def extract(self):
         """Método para extração dos dados das estações policiais"""
@@ -26,14 +24,6 @@ class Stations:
         logger.info(
             "Início da leitura dos dados das estações policiais."
         ) if self.verbose else None
-
-        cache_path = PATH_DATA_CACHE_MODEL / f"{self.name_raw}.pkl"
-
-        if self.read_cache:
-            logger.info("Modo de leitura da cache ativo.")
-            self.__geo_stations = pd.read_pickle(cache_path)
-            logger.info("Fim da extração dos dados.")
-            return
 
         logger.info(
             "Convertendo os dados das estações policiais para GeoJson."
@@ -47,14 +37,6 @@ class Stations:
 
         logger.info("Início do pré processamento.") if self.verbose else None
 
-        cache_path = PATH_DATA_CACHE_MODEL / f"{self.name}.pkl"
-
-        if self.read_cache:
-            logger.info("Modo de leitura da cache ativo.")
-            self.df_stations = pd.read_pickle(cache_path)
-            logger.info("Fim do pré-processamento.")
-            return
-
         df_out = self.__structure_stations().pipe(trace_df)
 
         logger.info("Incluindo os códigos das UOPs.") if self.verbose else None
@@ -64,12 +46,7 @@ class Stations:
             )
         df_out["uop"] = df_out["name"].map(stations_to_replace)
 
-        # Armazena a cache caso o modo de leitura da cache não esteja ativo:
-        if not self.read_cache:
-            logger.info(f"Armazenado {cache_path}.")
-            df_out.to_pickle(cache_path)
-
-        self.df_stations = df_out.pipe(trace_df)
+        self.df = df_out.pipe(trace_df)
         logger.info("Fim do pré-processamento.") if self.verbose else None
 
     ############################################################################################################
