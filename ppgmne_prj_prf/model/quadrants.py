@@ -24,14 +24,12 @@ class Quadrants:
         df_stations: pd.DataFrame,
         verbose: bool = True,
         read_cache: bool = False,
-        cluster_cache: bool = False,
     ):
         self.name = "quadrants"
         self.df_accidents = df_accidents
-        self.df_quadrants = pd.DataFrame()
+        self.df = pd.DataFrame()
         self.verbose = verbose
         self.read_cache = read_cache
-        self.cluster_cache = cluster_cache
 
         # Seleciona as UOPS:
         df_uops = df_stations.query('type == "UOP"').copy()
@@ -39,16 +37,17 @@ class Quadrants:
         df_uops["longitude"] = df_uops["longitude"].round(COORDS_PRECISION)
         self.df_uops = df_uops
 
-    def transform(self):
+    def transform(self, read_cache):
         """Método para pré-processamento dos quadrantes (regiões com volume de acidentes)"""
 
         logger.info("Início do pré processamento.") if self.verbose else None
         df = self.df_accidents.copy().pipe(trace_df)
 
+        # Carrega a cache caso o modo de leitura da cache esteja ativo:
         cache_path = PATH_DATA_CACHE_MODEL / f"{self.name}.pkl"
-        if self.read_cache:
+        if read_cache:
             logger.info("Modo de leitura da cache ativo.")
-            self.df_quadrants = pd.read_pickle(cache_path)
+            self.df = pd.read_pickle(cache_path)
             logger.info("Fim do pré-processamento.")
             return
 
@@ -78,11 +77,10 @@ class Quadrants:
         df = self.__add_only_uops(df).pipe(trace_df)
 
         # Armazena a cache caso o modo de leitura da cache não esteja ativo:
-        if not self.read_cache:
-            logger.info(f"Armazenado {cache_path}.")
-            df.to_pickle(cache_path)
+        logger.info(f"Armazenado {cache_path}.")
+        df.to_pickle(cache_path)
 
-        self.df_quadrants = df.copy().pipe(trace_df)
+        self.df = df.copy().pipe(trace_df)
         logger.info(f"Fim do pré-processamento.") if self.verbose else None
 
     #################################################################
@@ -207,18 +205,6 @@ class Quadrants:
             f"Identificando o cluster de cada quadrante."
         ) if self.verbose else None
 
-        # Se a leitura de cache estiver ativa, carrega a base de clusters da cache:
-        clusters_path = PATH_DATA_CACHE_MODEL / f"hc_clusters.pkl"
-        if self.cluster_cache:
-            logger.info("Lendo a cache da base de clusters.")
-            df_quadrant = pd.read_pickle(clusters_path)
-
-            # Inclui os clusters na base final:
-            df_out = df.merge(
-                df_quadrant[["quadrant_name", "quadrant_cluster"]], on="quadrant_name"
-            )
-            return df_out
-
         df_quadrant = (
             df[["quadrant_name"] + CLUSTERING_FEATS]
             .drop_duplicates()
@@ -231,12 +217,6 @@ class Quadrants:
         hc = AgglomerativeClustering(
             n_clusters=N_CLUSTERS, affinity="euclidean", linkage="ward"
         )
-
-        # Armazena o pickle do modelo caso o modo de leitura da cache não esteja ativo:
-        model_path = PATH_DATA_CACHE_MODEL / "hc_model.pkl"
-        if not self.cluster_cache:
-            logger.info(f"Armazenado o modelo de clustering em {model_path}.")
-            pickle.dump(hc, open(model_path, "wb"))
 
         df_quadrant["cluster"] = (hc.fit_predict(df_cluster)).astype(str)
 
@@ -255,12 +235,6 @@ class Quadrants:
                 df_stats = pd.concat([df_stats, df_stats_i])
         df_stats = df_stats.sort_values(by="mean").reset_index(drop=True)
 
-        # Armazena as estatísticas caso o modo de leitura da cache não esteja ativo:
-        stats_path = PATH_DATA_CACHE_MODEL / f"hc_stats.pkl"
-        if not self.cluster_cache:
-            logger.info(f"Armazenado as estatísticas de clustering em {stats_path}.")
-            df_stats.to_pickle(stats_path)
-
         # Renomeia os clusters:
         clusters = np.arange(1, N_CLUSTERS + 1, 1)
         df_stats["quadrant_cluster"] = clusters
@@ -268,15 +242,15 @@ class Quadrants:
             df_stats["quadrant_cluster"], categories=clusters, ordered=True
         )
 
+        # Armazena as estatísticas:
+        stats_path = PATH_DATA_CACHE_MODEL / "hc_stats.pkl"
+        logger.info(f"Armazenado {stats_path}.")
+        df.to_pickle(stats_path)
+
         # Inclui os clusters renomeados na base de quadrantes:
         df_quadrant = df_quadrant.merge(
             df_stats[["cluster", "quadrant_cluster"]], on="cluster"
         )
-
-        # Armazena a base de clusters caso o modo de leitura da cache não esteja ativo:
-        if not self.cluster_cache:
-            logger.info(f"Armazenado a base de clusters em {clusters_path}.")
-            df_quadrant[["quadrant_name", "quadrant_cluster"]].to_pickle(clusters_path)
 
         # Inclui os clusters na base final:
         df_out = df.merge(
