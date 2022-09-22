@@ -37,7 +37,7 @@ class Quadrants:
         df_uops["longitude"] = df_uops["longitude"].round(COORDS_PRECISION)
         self.df_uops = df_uops
 
-    def transform(self, read_cache):
+    def transform(self, read_cache: bool = False):
         """Método para pré-processamento dos quadrantes (regiões com volume de acidentes)"""
 
         logger.info("Início do pré processamento.") if self.verbose else None
@@ -275,11 +275,11 @@ class Quadrants:
 
         logger.info(f"Agregando os dados por quadrante.") if self.verbose else None
 
-        suffix = "quadrant_"
-        cols = [col for col in df.columns if col[: len(suffix)] == suffix]
+        preffix = "quadrant_"
+        cols = [col for col in df.columns if col[: len(preffix)] == preffix]
 
         df_out = df[cols].drop_duplicates().reset_index(drop=True)
-        df_out.columns = [col.replace(suffix, "") for col in cols]
+        df_out.columns = [col.replace(preffix, "") for col in cols]
 
         return df_out
 
@@ -381,6 +381,10 @@ class Quadrants:
 
         df_corresp = self.__find_corresp_quadrant(df)
         df_to_add = self.__get_only_uops(df, df_corresp)
+
+        # Ordena pelo nome do ponto e concatena:
+        df = df.sort_values(by=["municipality", "name"])
+        df_to_add = df_to_add.sort_values(by=["municipality", "name"])
         df = pd.concat([df, df_to_add], ignore_index=True)
 
         return df
